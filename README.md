@@ -4,10 +4,14 @@ A wrapper for [gringo](http://potassco.sourceforge.net/) that takes a logic prog
 a.
 b :- a.
 ```
-leads to the output ``a. b.``.
+leads to the grounded output ``a. b.`` Calling gringo-wrapper with the same logic program does not perform any optimizations.
 
 ## Table of contents
+ - [Building](#building)
  - [How it works](#how-it-works)
 
+## Building
+This project is managed using [Apache Maven](https://maven.apache.org/).
+
 ## How it works
-The gringo-wrapper replaces each fact ``f`` of the logic program with the rule ``f :- _l``, where ``_l`` is a new literal. Adding the rule ``_l | -_l`` ensures that gringo cannot do any optimization, since there are no facts in the logic program.
+The gringo-wrapper replaces each fact ``f`` of the logic program with the rule ``f :- _l``, where ``_l`` is a new literal. Adding the rule ``_l | -_l`` ensures that gringo cannot do any optimization, since there are no facts in the logic program. After this modification, the gringo wrapper uses gringo to ground the modified logic program. Then it replaces each grounded rule ``f :- _l`` with the fact ``f.`` and removes the artificial literal ``_l``.
