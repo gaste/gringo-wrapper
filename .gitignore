@@ -9,3 +9,4 @@ release.properties
 # eclipse project files
 .classpath
 .project
+.settings/
