@@ -27,7 +27,20 @@ public class GrounderGringoImpl implements Grounder {
 		}
 
 		writeLogicProgram(logicProgram, grounderProcess.getOutputStream());
-		return readGroundedProgram(grounderProcess.getInputStream());
+		
+		try {
+			String groundingResult = read(grounderProcess.getInputStream());
+			String errors = read(grounderProcess.getErrorStream());
+			
+			// check if there are any errors
+			if (!errors.isEmpty()) {
+				throw new GroundingException(errors);
+			}
+			
+			return groundingResult;
+		} catch (IOException e) {
+			throw new GroundingException("Could not read the grounded program");
+		}
 	}
 
 	private void writeLogicProgram(String logicProgram, OutputStream outputStream)
@@ -40,24 +53,20 @@ public class GrounderGringoImpl implements Grounder {
 		}
 	}
 
-	private String readGroundedProgram(InputStream inputStream)
-			throws GroundingException {
-		StringBuilder groundedProgram = new StringBuilder();
+	private String read(InputStream inputStream)
+			throws IOException {
+		StringBuilder input = new StringBuilder();
 		BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
 
-		try {
-			String line = reader.readLine();
+		String line = reader.readLine();
 
-			while (line != null) {
-				groundedProgram.append(line);
-				groundedProgram.append('\n');
+		while (line != null) {
+			input.append(line);
+			input.append('\n');
 
-				line = reader.readLine();
-			}
-		} catch (IOException e) {
-			throw new GroundingException("Reading the grounded program from the grounder failed", e);
+			line = reader.readLine();
 		}
 
-		return groundedProgram.toString();
+		return input.toString();
 	}
 }
