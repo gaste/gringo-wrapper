@@ -1,5 +1,11 @@
 package at.aau.grounder;
 
+/**
+ * Exception that gets thrown when the grounding of a logic program fails.
+ * 
+ * @author Philip Gasteiger
+ *
+ */
 public class GroundingException extends Exception {
 	private static final long serialVersionUID = 1L;
 
