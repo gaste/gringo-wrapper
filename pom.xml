@@ -102,6 +102,13 @@
   </properties>
 
   <dependencies>
+    <!-- JCommander: Command line options -->
+    <dependency>
+      <groupId>com.beust</groupId>
+      <artifactId>jcommander</artifactId>
+      <version>1.47</version>
+    </dependency>
+    
     <!-- JUnit: unit testing framework -->
     <dependency>
       <groupId>junit</groupId>

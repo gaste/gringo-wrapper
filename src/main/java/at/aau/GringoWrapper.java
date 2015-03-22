@@ -24,8 +24,8 @@ public class GringoWrapper {
 	/** The postprocessor that replaces the fact-rules with the original facts */
 	private Postprocessor postprocessor;
 
-	public GringoWrapper() {
-		grounder = new GrounderGringoImpl();
+	public GringoWrapper(String grounderCommand) {
+		grounder = new GrounderGringoImpl(grounderCommand);
 		preprocessor = new Preprocessor();
 		postprocessor = new Postprocessor();
 	}

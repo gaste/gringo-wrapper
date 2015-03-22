@@ -14,7 +14,17 @@ import java.io.OutputStream;
  */
 public class GrounderGringoImpl implements Grounder {
 	/** name of the command of the grounder */
-	public static final String GROUNDER_COMMAND_NAME = "gringo";
+	public final String GROUNDER_COMMAND_NAME;
+	
+	/**
+	 * Creates a new instance of the gringo grounder implementation.
+	 * 
+	 * @param grounderCommand
+	 *            The command of the grounder.
+	 */
+	public GrounderGringoImpl(String grounderCommand) {
+		this.GROUNDER_COMMAND_NAME = grounderCommand;
+	}
 
 	@Override
 	public String ground(String logicProgram) throws GroundingException {

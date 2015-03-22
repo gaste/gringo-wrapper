@@ -15,10 +15,11 @@ leads to the grounded output ``a. b.`` Calling gringo-wrapper with the same logi
 Make sure that you have added the location of the [gringo binaries](http://sourceforge.net/projects/potassco/files/gringo/) to your `PATH` system variable.
 Download the `gringo-wrapper-X.X-bin.zip` or `gringo-wrapper-X.X-bin.tar.gz` file from the [latest gringo-wrapper release](https://github.com/gaste/gringo-wrapper/releases/latest), or [build](#building) it yourself. Unpack the archive and use the scripts provided in the `bin/` directory to start the gringo wrapper:
 ```
-gringo-wrapper [filename]
+gringo-wrapper [options] [files]
 ```
- - If you specify a filename, gringo-wrapper will read the contents of that file and print the grounded program on the standard output.
+ - If you specify one or more files, gringo-wrapper will read the contents of that files and print the grounded program on the standard output.
  - If you do not specify a filename, use the standard input to specify the logic program to ground. Note that the input has to be delimited by EOF (which can be done in the console using `CTRL+D` on Unix machines and `CTRL+Z` on Windows machines).
+ - Call `gringo-wrapper -h` for all options
 
 ## Building
 This project is managed using [Apache Maven](https://maven.apache.org/).
