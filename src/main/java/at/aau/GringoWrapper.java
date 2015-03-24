@@ -23,11 +23,14 @@ public class GringoWrapper {
 
 	/** The postprocessor that replaces the fact-rules with the original facts */
 	private Postprocessor postprocessor;
+	
+	private final String DEBUG_CONSTANT_PREFIX;
 
-	public GringoWrapper() {
-		grounder = new GrounderGringoImpl();
+	public GringoWrapper(String grounderCommand, String debugConstantPrefix) {
+		grounder = new GrounderGringoImpl(grounderCommand);
 		preprocessor = new Preprocessor();
 		postprocessor = new Postprocessor();
+		this.DEBUG_CONSTANT_PREFIX = debugConstantPrefix;
 	}
 
 	/**
@@ -42,13 +45,19 @@ public class GringoWrapper {
 	 * @throws PostprocessingException
 	 *             If the postprocessing of the grounded program failed.
 	 */
-	public String ground(String logicProgram) throws GroundingException, PostprocessingException {
+	public String ground(String logicProgram, boolean addDebugConstants)
+			throws GroundingException, PostprocessingException {
 		String factLiteral = preprocessor.getFactLiteral(logicProgram);
-		String preprocessedLp = preprocessor.addFactLiteral(logicProgram, factLiteral);
-		String groundedPreprocessedLp = grounder.ground(preprocessedLp);
+		String preprocessedLp1 = logicProgram;
+		
+		if (addDebugConstants) {
+			preprocessedLp1 = preprocessor.addDebugConstants(logicProgram, DEBUG_CONSTANT_PREFIX);			
+		}
+		
+		String preprocessedLp2 = preprocessor.addFactLiteral(preprocessedLp1, factLiteral);
+		String groundedPreprocessedLp = grounder.ground(preprocessedLp2);
 		String groundedLp = postprocessor.removeFactLiteral(groundedPreprocessedLp, factLiteral);
 
 		return groundedLp;
 	}
-
 }
