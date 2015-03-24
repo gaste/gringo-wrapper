@@ -71,8 +71,8 @@ public class Options {
 		return printHelp;
 	}
 
-	public boolean isNoDebug() {
-		return noDebug;
+	public boolean isDebug() {
+		return !noDebug;
 	}
 
 	public String getDebugLiteral() {

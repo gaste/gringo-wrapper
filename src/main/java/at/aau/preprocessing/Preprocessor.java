@@ -61,4 +61,61 @@ public class Preprocessor {
 		// return the modified logic program
 		return logicProgram;
 	}
+	
+	/**
+	 * Takes the given logic program and debug constant prefix as input and
+	 * returns the logic program, where the debugConstantPrefix concatenated
+	 * with a number is added to the body of each non-fact rule. Furthermore, a
+	 * single choice rule containing all debug constants is added at the bottom
+	 * of the program to avoid warnings from the grounder.
+	 * 
+	 * @param logicProgram
+	 *            The logic program to be modified.
+	 * @param debugConstantPrefix
+	 *            The prefix for the debug constants to be added.
+	 * @return The modified logic program.
+	 */
+	public String addDebugConstants(String logicProgram,
+			String debugConstantPrefix) {
+		StringBuilder preprocessedProgram = new StringBuilder(logicProgram.length());
+		int debugConstantNum = 1;
+		
+		// split the program into rules. The regex matches only a single '.'
+		for (String rule : logicProgram.split("(?=((?<!\\.)\\.(?!\\.)))")) {
+			if (rule.contains(":-")) {
+				// rule, identified by ':-', thus add ', _debug#' to the rule
+				preprocessedProgram.append(rule);
+				preprocessedProgram.append(", ");
+				preprocessedProgram.append(debugConstantPrefix);
+				preprocessedProgram.append(debugConstantNum);
+				debugConstantNum ++;
+			} else if (rule.contains("|") || (rule.contains("{") && rule.contains("}"))) {
+				// disjunction or choice rule, thus add ' :- _debug#' to the rule
+				preprocessedProgram.append(rule);
+				preprocessedProgram.append(" :- ");
+				preprocessedProgram.append(debugConstantPrefix);
+				preprocessedProgram.append(debugConstantNum);
+				debugConstantNum ++;
+			} else {
+				// fact, thus do not alter it
+				preprocessedProgram.append(rule);
+			}
+		}
+		
+		// add choice rule for debug constants
+		if (debugConstantNum > 1) {
+			preprocessedProgram.append("\n{");
+			for (int i = 1; i < debugConstantNum; i ++) {
+				preprocessedProgram.append(debugConstantPrefix);
+				preprocessedProgram.append(i);
+				
+				if (i != debugConstantNum - 1) {
+					preprocessedProgram.append(";");
+				}
+			}
+			preprocessedProgram.append("}.");
+		}
+		
+		return preprocessedProgram.toString();
+	}
 }

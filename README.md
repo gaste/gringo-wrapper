@@ -6,6 +6,8 @@ b :- a.
 ```
 leads to the grounded output ``a. b.`` Calling gringo-wrapper with the same logic program does not perform any optimizations.
 
+Furthermore, (unless the ``--no-debug`` option is present) the gringo-wrapper adds a new unique constant ``_debug#`` to the body of each non-fact rule of the logic program, where ``#`` is an integer starting from 1 to the number of non-fact rules in the logic program. The prefix of the constants can be specified using the ``--debug-constant`` option. 
+
 ## Table of contents
  - [Usage](#usage)
  - [Building](#building)
@@ -19,7 +21,7 @@ gringo-wrapper [options] [files]
 ```
  - If you specify one or more files, gringo-wrapper will read the contents of that files and print the grounded program on the standard output.
  - If you do not specify a filename, use the standard input to specify the logic program to ground. Note that the input has to be delimited by EOF (which can be done in the console using `CTRL+D` on Unix machines and `CTRL+Z` on Windows machines).
- - Call `gringo-wrapper -h` for all options
+ - Call `gringo-wrapper -h` for all options.
 
 ## Building
 This project is managed using [Apache Maven](https://maven.apache.org/).

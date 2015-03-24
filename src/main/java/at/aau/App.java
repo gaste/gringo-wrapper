@@ -39,8 +39,8 @@ public class App {
 			}
 			
 			// instantiate a gringo wrapper and print the grounded program
-			GringoWrapper wrapper = new GringoWrapper(cliOptions.getGrounderCommand());
-			System.out.print(wrapper.ground(input));
+			GringoWrapper wrapper = new GringoWrapper(cliOptions.getGrounderCommand(), cliOptions.getDebugLiteral());
+			System.out.print(wrapper.ground(input, cliOptions.isDebug()));
 		} catch (InvalidOptionException e) {
 			System.err.println(e.getMessage());
 		} catch (FileNotFoundException e) {
