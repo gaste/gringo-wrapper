@@ -8,6 +8,10 @@ leads to the grounded output ``a. b.`` Calling gringo-wrapper with the same logi
 
 Furthermore, (unless the ``--no-debug`` option is present) the gringo-wrapper adds a new unique constant ``_debug#`` to the body of each non-fact rule of the logic program, where ``#`` is an integer starting from 1 to the number of non-fact rules in the logic program. The prefix of the constants can be specified using the ``--debug-constant`` option. 
 
+<p align="center">
+<a href="https://github.com/gaste/gringo-wrapper/releases/latest"><img src="https://img.shields.io/github/release/gaste/gringo-wrapper.svg" alt="Latest Version"></img></a>
+</p>
+
 ## Table of contents
  - [Usage](#usage)
  - [Building](#building)
