@@ -41,10 +41,13 @@ public class GrounderGringoImpl implements Grounder {
 		try {
 			String groundingResult = read(grounderProcess.getInputStream());
 			String errors = read(grounderProcess.getErrorStream());
-			
-			// check if there are any errors
-			if (!errors.isEmpty()) {
+
+			if (!errors.isEmpty() && groundingResult.isEmpty()) {
+				// no grounded result --> throw exception
 				throw new GroundingException(errors);
+			} else if (!errors.isEmpty()) {
+				// print as warning
+				System.err.println(errors);
 			}
 			
 			return groundingResult;
