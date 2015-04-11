@@ -8,7 +8,7 @@
 
   <groupId>at.aau</groupId>
   <artifactId>gringo-wrapper</artifactId>
-  <version>1.1.1</version>
+  <version>1.2</version>
   <packaging>jar</packaging>
 
   <name>gringo-wrapper</name>
@@ -38,6 +38,8 @@
             <manifest>
               <addClasspath>true</addClasspath>
               <mainClass>${main.class}</mainClass>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+              <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
             </manifest>
           </archive>
         </configuration>

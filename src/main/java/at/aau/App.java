@@ -30,6 +30,11 @@ public class App {
 				System.exit(0);
 			}
 			
+			if (cliOptions.isPrintVersion()) {
+				cliOptions.printVersion();
+				System.exit(0);
+			}
+			
 			if (cliOptions.getInputFiles().size() == 0) {
 				input = readInput(System.in);
 			} else {
@@ -39,7 +44,12 @@ public class App {
 			}
 			
 			// instantiate a gringo wrapper and print the grounded program
-			GringoWrapper wrapper = new GringoWrapper(cliOptions.getGrounderCommand(), cliOptions.getDebugLiteral());
+			GringoWrapper wrapper = new GringoWrapper(
+					cliOptions.getGrounderCommand(),
+					cliOptions.getGrounderOptions(),
+					cliOptions.getDebugLiteral(),
+					cliOptions.isRewriteOnly());
+			
 			System.out.print(wrapper.ground(input, cliOptions.isDebug()));
 		} catch (InvalidOptionException e) {
 			System.err.println(e.getMessage());

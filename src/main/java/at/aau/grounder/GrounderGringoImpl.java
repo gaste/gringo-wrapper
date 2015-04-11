@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Implementation of the {@link Grounder} interface that calls gringo.
@@ -16,22 +19,30 @@ public class GrounderGringoImpl implements Grounder {
 	/** name of the command of the grounder */
 	public final String GROUNDER_COMMAND_NAME;
 	
+	/** options passed to the grounder, separated by spaces */
+	public final String[] GROUNDER_OPTIONS;
+	
 	/**
 	 * Creates a new instance of the gringo grounder implementation.
 	 * 
 	 * @param grounderCommand
 	 *            The command of the grounder.
 	 */
-	public GrounderGringoImpl(String grounderCommand) {
+	public GrounderGringoImpl(String grounderCommand, String grounderOptions) {
 		this.GROUNDER_COMMAND_NAME = grounderCommand;
+		this.GROUNDER_OPTIONS = grounderOptions.split(" ");
 	}
 
 	@Override
 	public String ground(String logicProgram) throws GroundingException {
 		Process grounderProcess;
-		 
+		List<String> grounderCommand = new ArrayList<String>();
+		grounderCommand.add(GROUNDER_COMMAND_NAME);
+		grounderCommand.addAll(Arrays.asList(GROUNDER_OPTIONS));
+		
 		try {
-			grounderProcess = Runtime.getRuntime().exec(GROUNDER_COMMAND_NAME);
+			ProcessBuilder builder = new ProcessBuilder(grounderCommand);
+			grounderProcess = builder.start();
 		} catch (IOException e) {
 			throw new GroundingException("Starting the grounder failed", e);
 		}
