@@ -25,12 +25,15 @@ public class GringoWrapper {
 	private Postprocessor postprocessor;
 	
 	private final String DEBUG_CONSTANT_PREFIX;
+	
+	private final boolean rewriteOnly;
 
-	public GringoWrapper(String grounderCommand, String debugConstantPrefix) {
-		grounder = new GrounderGringoImpl(grounderCommand);
+	public GringoWrapper(String grounderCommand, String grounderOptions, String debugConstantPrefix, boolean rewriteOnly) {
+		grounder = new GrounderGringoImpl(grounderCommand, grounderOptions);
 		preprocessor = new Preprocessor();
 		postprocessor = new Postprocessor();
 		this.DEBUG_CONSTANT_PREFIX = debugConstantPrefix;
+		this.rewriteOnly = rewriteOnly;
 	}
 
 	/**
@@ -52,6 +55,10 @@ public class GringoWrapper {
 		
 		if (addDebugConstants) {
 			preprocessedLp1 = preprocessor.addDebugConstants(logicProgram, DEBUG_CONSTANT_PREFIX);			
+		}
+		
+		if (rewriteOnly) {
+			return preprocessedLp1;
 		}
 		
 		String preprocessedLp2 = preprocessor.addFactLiteral(preprocessedLp1, factLiteral);

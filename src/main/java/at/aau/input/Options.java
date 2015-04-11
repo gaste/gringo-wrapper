@@ -25,15 +25,24 @@ public class Options {
 
 	@Parameter(names = { "-h", "--help" }, help = true, description = "Print help information and exit")
 	private boolean printHelp = false;
+	
+	@Parameter(names = { "-v", "--version" }, description = "Print version and exit")
+	private boolean printVersion = false;
 
 	@Parameter(names = { "-n", "--no-debug" }, description = "Do not add the '_debug' literal")
 	private boolean noDebug = false;
+	
+	@Parameter(names = { "-r", "--rewrite-only" }, description = "Add the '_debug' literals and output the program without grounding")
+	private boolean rewriteOnly = false;
 
 	@Parameter(names = { "-d", "--debug-constant" }, description = "The debug constant to be added to the rules")
 	private String debugLiteral = "_debug";
 
 	@Parameter(names = { "-g", "--grounder" }, description = "The command of the grounder")
 	private String grounderCommand = "gringo";
+	
+	@Parameter(names = { "-go", "--grounder-options" }, description = "Command line options passed to the grounder")
+	private String grounderOptions = "";
 	
 	/**
 	 * Parse the given command line arguments.
@@ -62,6 +71,10 @@ public class Options {
 	public void printHelp() {
 		cli.usage();
 	}
+	
+	public void printVersion() {
+		System.out.println("gringo-wrapper version " + getClass().getPackage().getImplementationVersion());
+	}
 
 	public List<String> getInputFiles() {
 		return inputFiles;
@@ -69,6 +82,14 @@ public class Options {
 
 	public boolean isPrintHelp() {
 		return printHelp;
+	}
+	
+	public boolean isPrintVersion() {
+		return printVersion;
+	}
+	
+	public boolean isRewriteOnly() {
+		return rewriteOnly;
 	}
 
 	public boolean isDebug() {
@@ -81,5 +102,9 @@ public class Options {
 
 	public String getGrounderCommand() {
 		return grounderCommand;
+	}
+	
+	public String getGrounderOptions() {
+		return grounderOptions;
 	}
 }
