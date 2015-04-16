@@ -13,11 +13,14 @@ import java.util.regex.Pattern;
 public class Postprocessor {
 	/**
 	 * Remove the fact literal from the grounded program. This method removes
-	 * (*) the fact literal from the symbol table, (*) the negated fact literal
-	 * from the symbol table, (*) the constraint ':- factLiteral,
-	 * -factLiteral.', and (*) the disjunctive rule 'factLiteral |
-	 * -factLiteral.' from the grounded program. It also replaces each rule of
-	 * the form 'f :- factLiteral.' with the fact 'f.'
+	 * <ul>
+	 *   <li>the fact literal from the symbol table,</li>
+	 *   <li>the negated fact literal from the symbol table,</li>
+	 *   <li>the constraint <code>:- factLiteral, -factLiteral.</code>, and</li>
+	 *   <li>the disjunctive rule <code>factLiteral | -factLiteral.</code> from
+	 *   the grounded program. It also replaces each rule of the form
+	 *   <code>f :- factLiteral.</code> with the fact <code>f.</code></li>
+	 * </ul>
 	 * 
 	 * @param groundedProgram
 	 *            The grounded program to be postprocessed.
@@ -63,13 +66,48 @@ public class Postprocessor {
 		groundedProgram = groundedProgram.replace("1 1 2 0 " + factLiteralSymbol + " " + factLiteralSymbolNegated + "\n", "");
 		
 		// remove the fact literal disjunction rule 'factLiteral | -factLiteral' from the set of rules
-		groundedProgram = groundedProgram.replace("8 2 " + factLiteralSymbol + " " + factLiteralSymbolNegated + " 0 0\n", "");
+		// try both orders 'factLiteral | -factLiteral' and '-factLiteral | factLiteral'
+		groundedProgram = groundedProgram.replace("8 2 " + factLiteralSymbol + " " + factLiteralSymbolNegated + " 0 0\n", ""); 
+		groundedProgram = groundedProgram.replace("8 2 " + factLiteralSymbolNegated + " " + factLiteralSymbol + " 0 0\n", "");
 		
 		// pattern for matching fact literal rules 'f :- factLiteral'
 		Pattern factLiteralRules = Pattern.compile("^1 (\\d+) 1 0 " + factLiteralSymbol + "$", Pattern.MULTILINE);
 		
 		// replace all fact literal rules with the fact
 		groundedProgram = factLiteralRules.matcher(groundedProgram).replaceAll("1 $1 0 0");
+		
+		return groundedProgram;
+	}
+	
+	/**
+	 * Removes the choice rules of the _debug constants from the grounded
+	 * program.
+	 * 
+	 * @param groundedProgram
+	 *            The program from which the choice rules should be removed.
+	 * @param debugConstantPrefix
+	 *            The prefix of the debug constants.
+	 * @return The postprocessed grounded programm.
+	 */
+	public String removeDebugChoiceRules(String groundedProgram,
+			String debugConstantPrefix) {
+		// patterns that match the debug constants in the symbol table
+		Matcher debugConstantSymbolMatcher = Pattern.compile("^(\\d+) " + debugConstantPrefix + "[0-9]*(\\([ _,a-zA-Z0-9]*\\))?\n", Pattern.MULTILINE).matcher(groundedProgram);
+		
+		while(debugConstantSymbolMatcher.find()) {
+			String debugConstantSymbol = debugConstantSymbolMatcher.group(1);
+			Matcher debugChoiceRuleBodyMatcher = Pattern.compile("^3 1 " + debugConstantSymbol + " 1 0 (\\d+)\n", Pattern.MULTILINE).matcher(groundedProgram);
+			
+			if (debugChoiceRuleBodyMatcher.find()) {
+				// found a body for the debug choice rule, so delete it and the rule itself
+				String debugChoiceRuleBodySymbol = debugChoiceRuleBodyMatcher.group(1);
+				groundedProgram = debugChoiceRuleBodyMatcher.replaceAll("");
+				groundedProgram = groundedProgram.replaceAll("(?m)^1 " + debugChoiceRuleBodySymbol + "( \\d+)*\n", "");
+			} else {
+				// no body for the debug choice rule, so delete the choice rule itself only
+				groundedProgram = groundedProgram.replaceAll("(?m)^3 1 " + debugConstantSymbol + " 0 0\n" , "");
+			}
+		}
 		
 		return groundedProgram;
 	}

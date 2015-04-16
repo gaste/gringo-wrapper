@@ -297,7 +297,14 @@ public class PreprocessorTest {
 			  + "1{h;i;pred(d)}2 :- _debug6.\n"
 			  + "  12 { j; kssd12; l; m; pred3 (d, e, f) }   :- _debug7.\n"
 			  + "{n;pred1(c,d);o;p}3 :- _debug8.\n"
-			  + "{_debug1;_debug2;_debug3;_debug4;_debug5;_debug6;_debug7;_debug8}.";
+			  + "0{_debug1}1.\n"
+			  + "0{_debug2}1.\n"
+			  + "0{_debug3}1.\n"
+			  + "0{_debug4}1.\n"
+			  + "0{_debug5}1.\n"
+			  + "0{_debug6}1.\n"
+			  + "0{_debug7}1.\n"
+			  + "0{_debug8}1.\n";
 		
 		// act
 		String preprocessed = preprocessor.addDebugConstants(lp, "_debug");
@@ -327,8 +334,16 @@ public class PreprocessorTest {
 			  + "1{h;i;pred(d)}2:-a,b,pred(c), _debug6.\n"
 			  + "  12 { j; kssd12; l; m; pred3 (d, e, f) }  :-  pred(a , b),  dd , _debug7.\n"
 			  + "{n;pred1(c,d);o;p}3 :- aa, bb, pred1(d,c), _debug8.\n"
-			  + "{ _pred(X,Y)   ;    _pred (   X ) } :-  pred(X), pred1(  X  , Y  ), _debug9.\n"
-			  + "{_debug1;_debug2;_debug3;_debug4;_debug5;_debug6;_debug7;_debug8;_debug9}.";
+			  + "{ _pred(X,Y)   ;    _pred (   X ) } :-  pred(X), pred1(  X  , Y  ), _debug9(X, Y).\n"
+			  + "0{_debug1}1.\n"
+			  + "0{_debug2}1.\n"
+			  + "0{_debug3}1.\n"
+			  + "0{_debug4}1.\n"
+			  + "0{_debug5}1.\n"
+			  + "0{_debug6}1.\n"
+			  + "0{_debug7}1.\n"
+			  + "0{_debug8}1.\n"
+			  + "0{_debug9(X, Y)}1 :-   pred(X), pred1(  X  , Y  ).\n";
 		
 		// act
 		String preprocessed = preprocessor.addDebugConstants(lp, "_debug");
@@ -350,7 +365,11 @@ public class PreprocessorTest {
 			  + "c | _d1234_56890__12Asd | e :- _debug2.\n"
 			  + "   fsdf   | g     :- _debug3.  h | i :- _debug4.\n"
 			  + "   pred(  _aaax,   _xd   )   |   pred1   (_xd ) :- _debug5.\n"
-			  + "{_debug1;_debug2;_debug3;_debug4;_debug5}.";
+			  + "0{_debug1}1.\n"
+			  + "0{_debug2}1.\n"
+			  + "0{_debug3}1.\n"
+			  + "0{_debug4}1.\n"
+			  + "0{_debug5}1.\n";
 
 		// act
 		String preprocessed = preprocessor.addDebugConstants(lp, "_debug");
@@ -371,8 +390,12 @@ public class PreprocessorTest {
 				"a|b:-aa, _debug1.\n"
 			  + "c | _d1234_56890__12Asd | e :- bb, _debug2.\n"
 			  + "   fsdf   | g    :-    dd, _debug3.  h | i :-  ee, _debug4.\n"
-			  + "   pred(  _aaax,   _Xd   )   |   pred1   (_Xd )   :-  pred3   ( _Xd   )  , _debug5.\n"
-			  + "{_debug1;_debug2;_debug3;_debug4;_debug5}.";
+			  + "   pred(  _aaax,   _Xd   )   |   pred1   (_Xd )   :-  pred3   ( _Xd   )  , _debug5(_Xd).\n"
+			  + "0{_debug1}1.\n"
+			  + "0{_debug2}1.\n"
+			  + "0{_debug3}1.\n"
+			  + "0{_debug4}1.\n"
+			  + "0{_debug5(_Xd)}1 :-   pred3   ( _Xd   )  .\n";
 		  ;
 
 		// act
@@ -399,8 +422,14 @@ public class PreprocessorTest {
 			  + "     c   :-   d,   e   ,   f, _debug4.\n"
 			  + "pred1(c) :- d,   e   ,   f, _debug5.\n"
 			  + "     pred2    (   _fX01__234567809c   ,   a )   :-   pred1 (  _fX01__234567809c,   a ), _debug6.\n"
-			  + "  pred1  ( X     )     :-     pred2  (   X, a   ), _debug7.\n"
-			  + "{_debug1;_debug2;_debug3;_debug4;_debug5;_debug6;_debug7}.";
+			  + "  pred1  ( X     )     :-     pred2  (   X, a   ), _debug7(X).\n"
+			  + "0{_debug1}1.\n"
+			  + "0{_debug2}1.\n"
+			  + "0{_debug3}1.\n"
+			  + "0{_debug4}1.\n"
+			  + "0{_debug5}1.\n"
+			  + "0{_debug6}1.\n"
+			  + "0{_debug7(X)}1 :-      pred2  (   X, a   ).\n";
 
 		// act
 		String preprocessed = preprocessor.addDebugConstants(lp, "_debug");
@@ -422,7 +451,11 @@ public class PreprocessorTest {
 			  + ":-b, _debug2.:-c,d,e, _debug3.\n"
 			  + "  :-       pred(a), _debug4.\n"
 			  + "     :-   pred2   (   _x1290412805798436___124 ), _debug5.\n"
-			  + "{_debug1;_debug2;_debug3;_debug4;_debug5}.";
+			  + "0{_debug1}1.\n"
+			  + "0{_debug2}1.\n"
+			  + "0{_debug3}1.\n"
+			  + "0{_debug4}1.\n"
+			  + "0{_debug5}1.\n";
 
 		// act
 		String preprocessed = preprocessor.addDebugConstants(lp, "_debug");
