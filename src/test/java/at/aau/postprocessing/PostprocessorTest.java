@@ -2,8 +2,14 @@ package at.aau.postprocessing;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.hamcrest.collection.IsIterableContainingInAnyOrder;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -848,5 +854,139 @@ public class PostprocessorTest {
 		String postprocessed = postprocessor.addDebugChoiceRule(groundedProgram, "_debug");
 		
 		assertEquals(expected, postprocessed);
+	}
+	
+	// =========================================================================
+	// getRemovedRules tests
+	// =========================================================================
+	@Test
+	public void getRemovedRules_noDebugConstants_returnsCorrect() {
+		// a.
+		// pred(1,2).
+		String groundedProgram = 
+				"1 2 0 0\n"
+			  + "1 4 0 0\n"
+			  + "0\n"
+			  + "2 a\n"
+			  + "4 pred(1,2)\n"
+			  + "0\n"
+			  + "B+\n"
+			  + "0\n"
+			  + "B-\n"
+			  + "1\n"
+			  + "0\n"
+			  + "1";
+		
+		Map<String, String> debugRuleMap = new HashMap<String, String>();
+		
+		List<String> removedRules = postprocessor.getRemovedRules(groundedProgram, debugRuleMap);
+		
+		assertTrue(removedRules.isEmpty());
+	}
+	
+	@Test
+	public void getRemovedRules_noneRemoved_returnsCorrect() { 
+		// a.
+		// n(1).
+		// b(X) :- n(X), _debug1(X).
+		// c :- a, _debug2.
+		//
+		// 0{_debug1(X)}1 :- n(X).
+		// 0{_debug2}1.		
+		String groundedProgram =
+				"1 2 0 0\n"
+			  + "1 4 0 0\n"
+			  + "1 5 2 0 4 6\n"
+			  + "1 7 2 0 2 8\n"
+			  + "0\n"
+			  + "2 a\n"
+			  + "4 n(1)\n"
+			  + "6 _debug1(1)\n"
+			  + "5 b(1)\n"
+			  + "8 _debug2\n"
+			  + "7 c\n"
+			  + "0\n"
+			  + "B+\n"
+			  + "0\n"
+			  + "B-\n"
+			  + "1\n"
+			  + "0\n"
+			  + "1";
+
+		Map<String, String> debugRuleMap = new HashMap<String, String>();
+		debugRuleMap.put("_debug1", "b(X) :- n(X).");
+		debugRuleMap.put("_debug2", "c :- a.");
+		
+		List<String> removedRules = postprocessor.getRemovedRules(groundedProgram, debugRuleMap);
+		
+		assertTrue(removedRules.isEmpty());
+	}
+	
+	@Test
+	public void getRemovedRules_someRemovedDebugConstantsAlsoMissing_returnsCorrect() {
+		// n(1).
+		// n(2).
+		// a(X) :- b(X), n(X), _debug1(X).
+		// b(X) :- a(X), n(X), _debug2(X).
+		//
+		// 0{_debug1(X)}1 :- b(X), n(X).
+		// 0{_debug2(X)}1 :- a(X), n(X).		
+		String groundedProgram =
+				"1 2 0 0\n"
+			  + "1 4 0 0\n"
+			  + "0\n"
+			  + "2 n(1)\n"
+			  + "4 n(2)\n"
+			  + "0\n"
+			  + "B+\n"
+			  + "0\n"
+			  + "B-\n"
+			  + "1\n"
+			  + "0\n"
+			  + "1";
+
+		Map<String, String> debugRuleMap = new HashMap<String, String>();
+		debugRuleMap.put("_debug1", "a(X) :- b(X), n(X).");
+		debugRuleMap.put("_debug2", "b(X) :- a(X), n(X).");
+		
+		List<String> removedRules = postprocessor.getRemovedRules(groundedProgram, debugRuleMap);
+		
+		assertThat(removedRules, IsIterableContainingInAnyOrder.containsInAnyOrder("a(X) :- b(X), n(X).", "b(X) :- a(X), n(X)."));
+	}
+	
+	@Test
+	public void getRemovedRules_someRemovedDebugConstantsPresent_returnsCorrect() {
+		// a:-b, _debug1.
+		// b:-c, _debug2.
+		// c:-a, _debug3.
+		// d:-a, _debug4."
+		//
+		// 0{_debug1}1.
+		// 0{_debug2}1.
+		// 0{_debug3}1.
+		// 0{_debug4}1.		
+		String groundedProgram =
+				"0\n"
+			  + "6 _debug1\n"
+			  + "5 _debug2\n"
+			  + "4 _debug3\n"
+			  + "7 _debug4\n"
+			  + "0\n"
+			  + "B+\n"
+			  + "0\n"
+			  + "B-\n"
+			  + "1\n"
+			  + "0\n"
+			  + "1";
+
+		Map<String, String> debugRuleMap = new HashMap<String, String>();
+		debugRuleMap.put("_debug1", "a:-b.");
+		debugRuleMap.put("_debug2", "b:-c.");
+		debugRuleMap.put("_debug3", "c:-a.");
+		debugRuleMap.put("_debug4", "d:-a.");
+		
+		List<String> removedRules = postprocessor.getRemovedRules(groundedProgram, debugRuleMap);
+		
+		assertThat(removedRules, IsIterableContainingInAnyOrder.containsInAnyOrder("a:-b.", "b:-c.", "c:-a.", "d:-a."));
 	}
 }

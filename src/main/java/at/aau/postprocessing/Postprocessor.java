@@ -2,6 +2,7 @@ package at.aau.postprocessing;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -151,5 +152,39 @@ public class Postprocessor {
 		}
 		
 		return groundedProgram;
+	}
+	
+	/**
+	 * Gets a list of non-ground rules that where removed by the grounder.
+	 * 
+	 * @param groundedProgram
+	 *            The grounded program.
+	 * @param debugRuleMap
+	 *            The mapping of the _debug constants to the rules
+	 * @return The list of removed rules.
+	 */
+	public List<String> getRemovedRules(String groundedProgram, Map<String, String> debugRuleMap) {
+		List<String> removedRules = new ArrayList<String>();
+		String groundedRules = groundedProgram.split("(?m)^0$")[0];
+		
+		for(String debugConstant : debugRuleMap.keySet()) {
+			boolean foundRule = false;
+			Matcher debugConstantSymbolMatcher = getDebugConstantSymbolMatcher(groundedProgram, debugConstant);
+			
+			// search for at least one ground rule
+			while (debugConstantSymbolMatcher.find() && !foundRule) {
+				String debugSymbol = debugConstantSymbolMatcher.group(1);
+				
+				if(groundedRules.contains(debugSymbol)) {
+					foundRule = true;
+				}
+			}
+			
+			if(!foundRule) {
+				removedRules.add(debugRuleMap.get(debugConstant));
+			}
+		}
+		
+		return removedRules;
 	}
 }

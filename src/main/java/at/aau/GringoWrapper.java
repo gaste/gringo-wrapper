@@ -1,6 +1,8 @@
 package at.aau;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import at.aau.grounder.Grounder;
 import at.aau.grounder.GrounderGringoImpl;
@@ -52,11 +54,12 @@ public class GringoWrapper {
 	 */
 	public String ground(String logicProgram, boolean addDebugConstants)
 			throws GroundingException, PostprocessingException {
+		Map<String, String> debugRuleMap = new HashMap<String, String>();
 		String factLiteral = preprocessor.getFactLiteral(logicProgram);
 		String preprocessedLp1 = logicProgram;
 		
 		if (addDebugConstants) {
-			preprocessedLp1 = preprocessor.addDebugConstants(logicProgram, DEBUG_CONSTANT_PREFIX, new HashMap<String, String>());			
+			preprocessedLp1 = preprocessor.addDebugConstants(logicProgram, DEBUG_CONSTANT_PREFIX, debugRuleMap);			
 		}
 		
 		if (rewriteOnly) {
@@ -66,9 +69,25 @@ public class GringoWrapper {
 		String preprocessedLp2 = preprocessor.addFactLiteral(preprocessedLp1, factLiteral);
 		String groundedPreprocessedLp = grounder.ground(preprocessedLp2);
 		String groundedLpNoFactliteral = postprocessor.removeFactLiteral(groundedPreprocessedLp, factLiteral);
-		String groundedLpNoSingleChoiceRules = postprocessor.removeDebugChoiceRules(groundedLpNoFactliteral, DEBUG_CONSTANT_PREFIX);
-		String groundedLp = postprocessor.addDebugChoiceRule(groundedLpNoSingleChoiceRules, DEBUG_CONSTANT_PREFIX);
+		String groundedLp = groundedLpNoFactliteral;
+		
+		if(addDebugConstants) {
+			String groundedLpNoSingleChoiceRules = postprocessor.removeDebugChoiceRules(groundedLpNoFactliteral, DEBUG_CONSTANT_PREFIX);
+			groundedLp = postprocessor.addDebugChoiceRule(groundedLpNoSingleChoiceRules, DEBUG_CONSTANT_PREFIX);
+			warnRulesRemoved(postprocessor.getRemovedRules(groundedLpNoSingleChoiceRules, debugRuleMap));
+		}
 		
 		return groundedLp;
+	}
+	
+	private void warnRulesRemoved(List<String> removedRules) {
+		if (removedRules.isEmpty())
+			return;
+		
+		System.err.println("warning: the grounder removed the following rules:");
+		
+		for (String rule : removedRules) {
+			System.err.println("  " + rule);
+		}
 	}
 }
