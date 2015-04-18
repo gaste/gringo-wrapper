@@ -2,6 +2,7 @@ package at.aau.preprocessing;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -94,21 +95,25 @@ public class Preprocessor {
 	 *            The logic program to be modified.
 	 * @param debugConstantPrefix
 	 *            The prefix for the debug constants to be added.
+	 * @param debugAtomRuleMap
+	 *            Gets filled with mappings { _debug# -> rule | rule is a non
+	 *            fact rule}.
 	 * @return The modified logic program.
 	 */
 	public String addDebugConstants(String logicProgram,
-			String debugConstantPrefix) {
+			String debugConstantPrefix, Map<String, String> debugAtomRuleMap) {
 		StringBuilder preprocessedProgram = new StringBuilder(logicProgram.length());
 		StringBuilder debugChoiceRules = new StringBuilder();
 		int debugConstantNum = 1;
 		
 		// split the program into rules. The regex matches only a single '.'
-		for (String rule : logicProgram.split("(?=((?<!\\.)\\.(?!\\.)))")) {
+		for (String rule : logicProgram.split("(?<!\\.)\\.(?!\\.)")) {
 			if (rule.contains(":-")) {
 				// rule, identified by ':-', thus add ', _debug#' to the rule
 				StringBuilder debugConstant = new StringBuilder();
 				debugConstant.append(debugConstantPrefix);
 				debugConstant.append(debugConstantNum);
+				debugAtomRuleMap.put(debugConstantPrefix + debugConstantNum, rule.replace("\n", "").trim() + ".");
 				
 				List<String> variables = getVariables(rule.split(":-")[1]);
 				if (variables.size() > 0) {
@@ -120,6 +125,7 @@ public class Preprocessor {
 				preprocessedProgram.append(rule);
 				preprocessedProgram.append(", ");
 				preprocessedProgram.append(debugConstant);
+				preprocessedProgram.append(".");
 				
 				debugChoiceRules.append("0{");
 				debugChoiceRules.append(debugConstant);
@@ -139,6 +145,8 @@ public class Preprocessor {
 				preprocessedProgram.append(" :- ");
 				preprocessedProgram.append(debugConstantPrefix);
 				preprocessedProgram.append(debugConstantNum);
+				preprocessedProgram.append(".");
+				debugAtomRuleMap.put(debugConstantPrefix + debugConstantNum, rule.replace("\n", "").trim() + ".");
 				
 				debugChoiceRules.append("0{");
 				debugChoiceRules.append(debugConstantPrefix);
@@ -149,6 +157,11 @@ public class Preprocessor {
 			} else {
 				// fact, thus do not alter it
 				preprocessedProgram.append(rule);
+				
+				// only add delimiting . if the rule is not empty
+				if (rule.trim().length() > 0) {
+					preprocessedProgram.append(".");
+				}
 			}
 		}
 		

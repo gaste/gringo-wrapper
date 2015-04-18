@@ -1,10 +1,16 @@
 package at.aau.preprocessing;
 
-//import org.junit.Assert;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertEquals;
 
 /**
  * Unit tests for {@link Preprocessor}.
@@ -252,10 +258,12 @@ public class PreprocessorTest {
 			  + "  bb  .   dd . ";
 		
 		// act
-		String preprocessed = preprocessor.addDebugConstants(lp, "_debug");
+		Map<String, String> debugRuleMap = new HashMap<String, String>();
+		String preprocessed = preprocessor.addDebugConstants(lp, "_debug", debugRuleMap);
 		
 		// assert
 		assertEquals(lp, preprocessed);
+		assertTrue(debugRuleMap.isEmpty());
 	}
 	
 
@@ -271,10 +279,12 @@ public class PreprocessorTest {
 			  + "num(15..20).  num    (     25     ..   30 ).";
 		
 		// act
-		String preprocessed = preprocessor.addDebugConstants(lp, "_debug");
+		Map<String, String> debugRuleMap = new HashMap<String, String>();
+		String preprocessed = preprocessor.addDebugConstants(lp, "_debug", debugRuleMap);
 		
 		// assert
 		assertEquals(lp, preprocessed);
+		assertTrue(debugRuleMap.isEmpty());
 	}
 	
 	@Test
@@ -306,11 +316,23 @@ public class PreprocessorTest {
 			  + "0{_debug7}1.\n"
 			  + "0{_debug8}1.\n";
 		
+		Map<String, String> correctDebugRuleMap = new HashMap<String, String>();
+		correctDebugRuleMap.put("_debug1", "{a;b;c}.");
+		correctDebugRuleMap.put("_debug2", "{ _d1234_56890__12Asd    ;   e   ;     f   }.");
+		correctDebugRuleMap.put("_debug3", "{ pred(_a);  pred1 (  b , d )  ; pred (    c )   }.");
+		correctDebugRuleMap.put("_debug4", "1 { g; h   ; i } 3.");
+		correctDebugRuleMap.put("_debug5", "1 { pred3  (  a,  b ,    c  )   ; h   ; i } 3.");
+		correctDebugRuleMap.put("_debug6", "1{h;i;pred(d)}2.");
+		correctDebugRuleMap.put("_debug7", "12 { j; kssd12; l; m; pred3 (d, e, f) }.");
+		correctDebugRuleMap.put("_debug8", "{n;pred1(c,d);o;p}3.");
+		
 		// act
-		String preprocessed = preprocessor.addDebugConstants(lp, "_debug");
+		Map<String, String> debugRuleMap = new HashMap<String, String>();
+		String preprocessed = preprocessor.addDebugConstants(lp, "_debug", debugRuleMap);
 		
 		// assert
 		assertEquals(correct, preprocessed);
+		assertThat(debugRuleMap, is(correctDebugRuleMap));
 	}
 	
 	@Test
@@ -345,11 +367,24 @@ public class PreprocessorTest {
 			  + "0{_debug8}1.\n"
 			  + "0{_debug9(X, Y)}1 :-   pred(X), pred1(  X  , Y  ).\n";
 		
+		Map<String, String> correctDebugRuleMap = new HashMap<String, String>();
+		correctDebugRuleMap.put("_debug1", "{a;b;c} :- aa.");
+		correctDebugRuleMap.put("_debug2", "{ _d1234_56890__12Asd    ;   e   ;     f   }    :-   bb.");
+		correctDebugRuleMap.put("_debug3", "{ pred(_a);  pred1 (  b , d )  ; pred (    c )   }    :-  pred (  b   )  ,  pred (e).");
+		correctDebugRuleMap.put("_debug4", "1 { g; h   ; i } 3 :- ee, ff.");
+		correctDebugRuleMap.put("_debug5", "1 { pred3  (  a,  b ,    c  )   ; h   ; i } 3   :-   gg  ,   pred   (    b,    c ).");
+		correctDebugRuleMap.put("_debug6", "1{h;i;pred(d)}2:-a,b,pred(c).");
+		correctDebugRuleMap.put("_debug7", "12 { j; kssd12; l; m; pred3 (d, e, f) }  :-  pred(a , b),  dd.");
+		correctDebugRuleMap.put("_debug8", "{n;pred1(c,d);o;p}3 :- aa, bb, pred1(d,c).");
+		correctDebugRuleMap.put("_debug9", "{ _pred(X,Y)   ;    _pred (   X ) } :-  pred(X), pred1(  X  , Y  ).");
+		
 		// act
-		String preprocessed = preprocessor.addDebugConstants(lp, "_debug");
+		Map<String, String> debugRuleMap = new HashMap<String, String>();
+		String preprocessed = preprocessor.addDebugConstants(lp, "_debug", debugRuleMap);
 		
 		// assert
 		assertEquals(correct, preprocessed);
+		assertThat(debugRuleMap, is(correctDebugRuleMap));
 	}
 	
 	@Test
@@ -371,11 +406,20 @@ public class PreprocessorTest {
 			  + "0{_debug4}1.\n"
 			  + "0{_debug5}1.\n";
 
+		Map<String, String> correctDebugRuleMap = new HashMap<String, String>();
+		correctDebugRuleMap.put("_debug1", "a|b.");
+		correctDebugRuleMap.put("_debug2", "c | _d1234_56890__12Asd | e.");
+		correctDebugRuleMap.put("_debug3", "fsdf   | g.");
+		correctDebugRuleMap.put("_debug4", "h | i.");
+		correctDebugRuleMap.put("_debug5", "pred(  _aaax,   _xd   )   |   pred1   (_xd ).");
+		
 		// act
-		String preprocessed = preprocessor.addDebugConstants(lp, "_debug");
+		Map<String, String> debugRuleMap = new HashMap<String, String>();
+		String preprocessed = preprocessor.addDebugConstants(lp, "_debug", debugRuleMap);
 		
 		// assert
 		assertEquals(correct, preprocessed);
+		assertThat(debugRuleMap, is(correctDebugRuleMap));
 	}
 	
 	@Test
@@ -396,14 +440,21 @@ public class PreprocessorTest {
 			  + "0{_debug3}1.\n"
 			  + "0{_debug4}1.\n"
 			  + "0{_debug5(_Xd)}1 :-   pred3   ( _Xd   )  .\n";
-		  ;
-
+		
+		Map<String, String> correctDebugRuleMap = new HashMap<String, String>();
+		correctDebugRuleMap.put("_debug1","a|b:-aa.");
+		correctDebugRuleMap.put("_debug2","c | _d1234_56890__12Asd | e :- bb.");
+		correctDebugRuleMap.put("_debug3","fsdf   | g    :-    dd.");
+		correctDebugRuleMap.put("_debug4","h | i :-  ee.");
+		correctDebugRuleMap.put("_debug5","pred(  _aaax,   _Xd   )   |   pred1   (_Xd )   :-  pred3   ( _Xd   ).");
+		
 		// act
-		String preprocessed = preprocessor.addDebugConstants(lp, "_debug");
+		Map<String, String> debugRuleMap = new HashMap<String, String>();
+		String preprocessed = preprocessor.addDebugConstants(lp, "_debug", debugRuleMap);
 		
 		// assert
 		assertEquals(correct, preprocessed);
-		
+		assertThat(debugRuleMap, is(correctDebugRuleMap));
 	}
 	
 	@Test
@@ -431,11 +482,22 @@ public class PreprocessorTest {
 			  + "0{_debug6}1.\n"
 			  + "0{_debug7(X)}1 :-      pred2  (   X, a   ).\n";
 
+		Map<String, String> correctDebugRuleMap = new HashMap<String, String>();
+		correctDebugRuleMap.put("_debug1","a :- b.");
+		correctDebugRuleMap.put("_debug2","z:-x.");
+		correctDebugRuleMap.put("_debug3","y:-x.");
+		correctDebugRuleMap.put("_debug4","c   :-   d,   e   ,   f.");
+		correctDebugRuleMap.put("_debug5","pred1(c) :- d,   e   ,   f.");
+		correctDebugRuleMap.put("_debug6","pred2    (   _fX01__234567809c   ,   a )   :-   pred1 (  _fX01__234567809c,   a ).");
+		correctDebugRuleMap.put("_debug7","pred1  ( X     )     :-     pred2  (   X, a   ).");
+		
 		// act
-		String preprocessed = preprocessor.addDebugConstants(lp, "_debug");
+		Map<String, String> debugRuleMap = new HashMap<String, String>();
+		String preprocessed = preprocessor.addDebugConstants(lp, "_debug", debugRuleMap);
 		
 		// assert
 		assertEquals(correct, preprocessed);
+		assertThat(debugRuleMap, is(correctDebugRuleMap));
 	}
 	
 	@Test
@@ -457,10 +519,19 @@ public class PreprocessorTest {
 			  + "0{_debug4}1.\n"
 			  + "0{_debug5}1.\n";
 
+		Map<String, String> correctDebugRuleMap = new HashMap<String, String>();
+		correctDebugRuleMap.put("_debug1",":- a.");
+		correctDebugRuleMap.put("_debug2",":-b.");
+		correctDebugRuleMap.put("_debug3",":-c,d,e.");
+		correctDebugRuleMap.put("_debug4",":-       pred(a).");
+		correctDebugRuleMap.put("_debug5",":-   pred2   (   _x1290412805798436___124 ).");
+		
 		// act
-		String preprocessed = preprocessor.addDebugConstants(lp, "_debug");
+		Map<String, String> debugRuleMap = new HashMap<String, String>();
+		String preprocessed = preprocessor.addDebugConstants(lp, "_debug", debugRuleMap);
 		
 		// assert
 		assertEquals(correct, preprocessed);
+		assertThat(debugRuleMap, is(correctDebugRuleMap));
 	}
 }

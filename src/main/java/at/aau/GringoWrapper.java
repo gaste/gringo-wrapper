@@ -1,5 +1,7 @@
 package at.aau;
 
+import java.util.HashMap;
+
 import at.aau.grounder.Grounder;
 import at.aau.grounder.GrounderGringoImpl;
 import at.aau.grounder.GroundingException;
@@ -54,7 +56,7 @@ public class GringoWrapper {
 		String preprocessedLp1 = logicProgram;
 		
 		if (addDebugConstants) {
-			preprocessedLp1 = preprocessor.addDebugConstants(logicProgram, DEBUG_CONSTANT_PREFIX);			
+			preprocessedLp1 = preprocessor.addDebugConstants(logicProgram, DEBUG_CONSTANT_PREFIX, new HashMap<String, String>());			
 		}
 		
 		if (rewriteOnly) {
