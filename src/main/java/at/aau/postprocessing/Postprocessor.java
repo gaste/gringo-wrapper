@@ -1,7 +1,10 @@
 package at.aau.postprocessing;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Postprocessor that replaces each artificial fact-rule with the fact and
@@ -91,8 +94,7 @@ public class Postprocessor {
 	 */
 	public String removeDebugChoiceRules(String groundedProgram,
 			String debugConstantPrefix) {
-		// patterns that match the debug constants in the symbol table
-		Matcher debugConstantSymbolMatcher = Pattern.compile("^(\\d+) " + debugConstantPrefix + "[0-9]*(\\([ _,a-zA-Z0-9]*\\))?\n", Pattern.MULTILINE).matcher(groundedProgram);
+		Matcher debugConstantSymbolMatcher = getDebugConstantSymbolMatcher(groundedProgram, debugConstantPrefix);
 		
 		while(debugConstantSymbolMatcher.find()) {
 			String debugConstantSymbol = debugConstantSymbolMatcher.group(1);
@@ -107,6 +109,45 @@ public class Postprocessor {
 				// no body for the debug choice rule, so delete the choice rule itself only
 				groundedProgram = groundedProgram.replaceAll("(?m)^3 1 " + debugConstantSymbol + " 0 0\n" , "");
 			}
+		}
+		
+		return groundedProgram;
+	}
+
+	private Matcher getDebugConstantSymbolMatcher(String groundedProgram,
+			String debugConstantPrefix) {
+		Matcher debugConstantSymbolMatcher = Pattern.compile("^(\\d+) " + debugConstantPrefix + "[0-9]*(\\([ _,a-zA-Z0-9]*\\))?\n", Pattern.MULTILINE).matcher(groundedProgram);
+		return debugConstantSymbolMatcher;
+	}
+	
+	/**
+	 * Add a single choice rule to the ground program, that includes all
+	 * <code>_debug</code> atoms.
+	 * 
+	 * @param groundedProgram
+	 *            The grounded program to modify
+	 * @param debugConstantPrefix
+	 *            The prefix of the debug constants
+	 * @return The postprocessed grounded program
+	 */
+	public String addDebugChoiceRule(String groundedProgram,
+			String debugConstantPrefix) {
+		List<String> debugConstantSymbols = new ArrayList<String>();
+		Matcher debugConstantSymbolMatcher = getDebugConstantSymbolMatcher(groundedProgram, debugConstantPrefix);
+		
+		// determine all debug constant symbols
+		while (debugConstantSymbolMatcher.find()) {
+			debugConstantSymbols.add(debugConstantSymbolMatcher.group(1));
+		}
+		
+		if (debugConstantSymbols.size() > 0) {
+			// build the choice rule
+			String choiceRule = "3 " // rule type: choice rule
+							  + debugConstantSymbols.size() + " " // #heads
+							  + debugConstantSymbols.stream().collect(Collectors.joining(" ")) // heads 
+							  + " 0 0"; // #literals #negative
+			
+			groundedProgram = groundedProgram.replaceFirst("(?m)^0$", choiceRule + "\n0");
 		}
 		
 		return groundedProgram;

@@ -64,8 +64,9 @@ public class GringoWrapper {
 		String preprocessedLp2 = preprocessor.addFactLiteral(preprocessedLp1, factLiteral);
 		String groundedPreprocessedLp = grounder.ground(preprocessedLp2);
 		String groundedLpNoFactliteral = postprocessor.removeFactLiteral(groundedPreprocessedLp, factLiteral);
-		String groundedLp = postprocessor.removeDebugChoiceRules(groundedLpNoFactliteral, DEBUG_CONSTANT_PREFIX);
-
+		String groundedLpNoSingleChoiceRules = postprocessor.removeDebugChoiceRules(groundedLpNoFactliteral, DEBUG_CONSTANT_PREFIX);
+		String groundedLp = postprocessor.addDebugChoiceRule(groundedLpNoSingleChoiceRules, DEBUG_CONSTANT_PREFIX);
+		
 		return groundedLp;
 	}
 }

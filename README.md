@@ -6,7 +6,7 @@ b :- a.
 ```
 leads to the grounded output ``a. b.`` Calling gringo-wrapper with the same logic program does not perform any optimizations.
 
-Furthermore, (unless the ``--no-debug`` option is present) the gringo-wrapper adds a new unique constant ``_debug#(V1, ...)`` to the body of each non-fact rule of the logic program, where ``#`` is an integer starting from 1 to the number of non-fact rules in the logic program, and ``(V1, ...)`` is the list of all variables used in the rule (if any). The prefix of the constants can be specified using the ``--debug-constant`` option. 
+Furthermore, (unless the ``--no-debug`` option is present) the gringo-wrapper adds a new unique constant ``_debug#(V1, ...)`` to the body of each non-fact rule of the logic program, where ``#`` is an integer starting from 1 to the number of non-fact rules in the logic program, and ``(V1, ...)`` is the list of all variables used in the rule (if any). In addition to adding the ``_debug`` constants to the body of the rules, one choice rule containing all debug constants is added to the program. The prefix of the constants can be specified using the ``--debug-constant`` option. 
 
 <p align="center">
 <a href="https://github.com/gaste/gringo-wrapper/releases/latest"><img src="https://img.shields.io/github/release/gaste/gringo-wrapper.svg" alt="Latest Version"></img></a>

@@ -666,4 +666,187 @@ public class PostprocessorTest {
 		// assert
 		assertEquals(expected, postprocessed);
 	}
+	
+	// =========================================================================
+	// addDebugChoiceRule tests
+	// =========================================================================
+	
+	@Test
+	public void addDebugChoiceRule_noDebugAtoms_returnsSame() {
+		// a.
+		// b:-a.
+		// c | d.
+		// {e;f}:-b,c.
+		// :- not e.
+		String groundedProgram =
+				"1 2 0 0\n"
+			  + "1 4 1 0 2\n"
+			  + "1 1 1 1 5\n"
+			  + "8 2 7 8 0 0\n"
+			  + "1 9 2 0 4 8\n"
+			  + "3 2 10 5 1 0 9\n"
+			  + "0\n"
+			  + "2 a\n"
+			  + "4 b\n"
+			  + "7 d\n"
+			  + "8 c\n"
+			  + "5 e\n"
+			  + "10 f\n"
+			  + "0\n"
+			  + "B+\n"
+			  + "0\n"
+			  + "B-\n"
+			  + "1\n"
+			  + "0\n"
+			  + "1";
+		
+		String postprocessed = postprocessor.addDebugChoiceRule(groundedProgram, "_debug");
+		
+		assertEquals(groundedProgram, postprocessed);
+	}
+	
+	@Test
+	public void addDebugChoiceRule_unaryDebugAtoms_returnsCorrect() {
+		// a.
+		// b:-a, _debug1.
+		// c | d :- _debug2.
+		// {e;f}:-b,c, _debug3.
+		// :- not e, _debug4.
+		String groundedProgram = 
+				"1 2 0 0\n"
+			  + "1 4 2 0 2 5\n"
+			  + "1 1 2 1 6 7\n"
+			  + "8 2 10 11 1 0 9\n"
+			  + "1 13 3 0 4 11 12\n"
+			  + "3 2 14 6 1 0 13\n"
+			  + "0\n"
+			  + "2 a\n"
+			  + "5 _debug1\n"
+			  + "4 b\n"
+			  + "9 _debug2\n"
+			  + "10 d\n"
+			  + "11 c\n"
+			  + "12 _debug3\n"
+			  + "6 e\n"
+			  + "14 f\n"
+			  + "7 _debug4\n"
+			  + "0\n"
+			  + "B+\n"
+			  + "0\n"
+			  + "B-\n"
+			  + "1\n"
+			  + "0\n"
+			  + "1";
+		
+		String expected =
+				"1 2 0 0\n"
+			  + "1 4 2 0 2 5\n"
+			  + "1 1 2 1 6 7\n"
+			  + "8 2 10 11 1 0 9\n"
+			  + "1 13 3 0 4 11 12\n"
+			  + "3 2 14 6 1 0 13\n"
+			  + "3 4 5 9 12 7 0 0\n"
+			  + "0\n"
+			  + "2 a\n"
+			  + "5 _debug1\n"
+			  + "4 b\n"
+			  + "9 _debug2\n"
+			  + "10 d\n"
+			  + "11 c\n"
+			  + "12 _debug3\n"
+			  + "6 e\n"
+			  + "14 f\n"
+			  + "7 _debug4\n"
+			  + "0\n"
+			  + "B+\n"
+			  + "0\n"
+			  + "B-\n"
+			  + "1\n"
+			  + "0\n"
+			  + "1";
+		
+		String postprocessed = postprocessor.addDebugChoiceRule(groundedProgram, "_debug");
+		
+		assertEquals(expected, postprocessed);
+	}
+	
+	@Test
+	public void addDebugChoiceRule_naryDebugAtoms_returnsCorrect() {
+		// a(1).a(abc9).a(_lD9e).
+		// b(X,X) :- a(X), _debug1(X).
+		// c(X) :- a(X), _debug2(X).
+		// d(X,Y) :- a(X), c(Y), d(X,Y), _debug3(X, Y).
+		String groundedProgram = 
+				"1 2 0 0\n"
+			  + "1 4 0 0\n"
+			  + "1 5 0 0\n"
+			  + "1 6 2 0 2 7\n"
+			  + "1 8 2 0 4 9\n"
+			  + "1 10 2 0 5 11\n"
+			  + "1 12 2 0 2 13\n"
+			  + "1 14 2 0 4 15\n"
+			  + "1 16 2 0 5 17\n"
+			  + "0\n"
+			  + "2 a(1)\n"
+			  + "4 a(abc9)\n"
+			  + "5 a(_lD9e)\n"
+			  + "7 _debug1(1)\n"
+			  + "9 _debug1(abc9)\n"
+			  + "11 _debug1(_lD9e)\n"
+			  + "6 b(1,1)\n"
+			  + "8 b(abc9,abc9)\n"
+			  + "10 b(_lD9e,_lD9e)\n"
+			  + "13 _debug2(1)\n"
+			  + "15 _debug2(abc9)\n"
+			  + "17 _debug2(_lD9e)\n"
+			  + "12 c(1)\n"
+			  + "14 c(abc9)\n"
+			  + "16 c(_lD9e)\n"
+			  + "0\n"
+			  + "B+\n"
+			  + "0\n"
+			  + "B-\n"
+			  + "1\n"
+			  + "0\n"
+			  + "1";
+		
+		String expected = 
+				"1 2 0 0\n"
+			  + "1 4 0 0\n"
+			  + "1 5 0 0\n"
+			  + "1 6 2 0 2 7\n"
+			  + "1 8 2 0 4 9\n"
+			  + "1 10 2 0 5 11\n"
+			  + "1 12 2 0 2 13\n"
+			  + "1 14 2 0 4 15\n"
+			  + "1 16 2 0 5 17\n"
+			  + "3 6 7 9 11 13 15 17 0 0\n"
+			  + "0\n"
+			  + "2 a(1)\n"
+			  + "4 a(abc9)\n"
+			  + "5 a(_lD9e)\n"
+			  + "7 _debug1(1)\n"
+			  + "9 _debug1(abc9)\n"
+			  + "11 _debug1(_lD9e)\n"
+			  + "6 b(1,1)\n"
+			  + "8 b(abc9,abc9)\n"
+			  + "10 b(_lD9e,_lD9e)\n"
+			  + "13 _debug2(1)\n"
+			  + "15 _debug2(abc9)\n"
+			  + "17 _debug2(_lD9e)\n"
+			  + "12 c(1)\n"
+			  + "14 c(abc9)\n"
+			  + "16 c(_lD9e)\n"
+			  + "0\n"
+			  + "B+\n"
+			  + "0\n"
+			  + "B-\n"
+			  + "1\n"
+			  + "0\n"
+			  + "1";
+		
+		String postprocessed = postprocessor.addDebugChoiceRule(groundedProgram, "_debug");
+		
+		assertEquals(expected, postprocessed);
+	}
 }
