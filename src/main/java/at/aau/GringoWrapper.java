@@ -7,6 +7,7 @@ import java.util.Map;
 import at.aau.grounder.Grounder;
 import at.aau.grounder.GrounderGringoImpl;
 import at.aau.grounder.GroundingException;
+import at.aau.output.OutputBuilder;
 import at.aau.postprocessing.PostprocessingException;
 import at.aau.postprocessing.Postprocessor;
 import at.aau.preprocessing.Preprocessor;
@@ -28,14 +29,18 @@ public class GringoWrapper {
 	/** The postprocessor that replaces the fact-rules with the original facts */
 	private Postprocessor postprocessor;
 	
+	/** The output buider that computes the symbol table output */
+	private OutputBuilder outputBuilder;
+	
 	private final String DEBUG_CONSTANT_PREFIX;
 	
 	private final boolean rewriteOnly;
 
 	public GringoWrapper(String grounderCommand, String grounderOptions, String debugConstantPrefix, boolean rewriteOnly) {
-		grounder = new GrounderGringoImpl(grounderCommand, grounderOptions);
-		preprocessor = new Preprocessor();
-		postprocessor = new Postprocessor();
+		this.grounder = new GrounderGringoImpl(grounderCommand, grounderOptions);
+		this.preprocessor = new Preprocessor();
+		this.postprocessor = new Postprocessor();
+		this.outputBuilder = new OutputBuilder();
 		this.DEBUG_CONSTANT_PREFIX = debugConstantPrefix;
 		this.rewriteOnly = rewriteOnly;
 	}
@@ -54,7 +59,7 @@ public class GringoWrapper {
 	 */
 	public String ground(String logicProgram, boolean addDebugConstants)
 			throws GroundingException, PostprocessingException {
-		Map<String, String> debugRuleMap = new HashMap<String, String>();
+		Map<String, Rule> debugRuleMap = new HashMap<String, Rule>();
 		String factLiteral = preprocessor.getFactLiteral(logicProgram);
 		String preprocessedLp1 = logicProgram;
 		
@@ -75,6 +80,7 @@ public class GringoWrapper {
 			String groundedLpNoSingleChoiceRules = postprocessor.removeDebugChoiceRules(groundedLpNoFactliteral, DEBUG_CONSTANT_PREFIX);
 			groundedLp = postprocessor.addDebugChoiceRule(groundedLpNoSingleChoiceRules, DEBUG_CONSTANT_PREFIX);
 			warnRulesRemoved(postprocessor.getRemovedRules(groundedLpNoSingleChoiceRules, debugRuleMap));
+			groundedLp += outputBuilder.buildRuleTable(debugRuleMap);
 		}
 		
 		return groundedLp;

@@ -8,6 +8,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import at.aau.Rule;
+
 /**
  * Preprocessor that replaces each fact by a rule.
  * 
@@ -101,7 +103,7 @@ public class Preprocessor {
 	 * @return The modified logic program.
 	 */
 	public String addDebugConstants(String logicProgram,
-			String debugConstantPrefix, Map<String, String> debugAtomRuleMap) {
+			String debugConstantPrefix, Map<String, Rule> debugAtomRuleMap) {
 		StringBuilder preprocessedProgram = new StringBuilder(logicProgram.length());
 		StringBuilder debugChoiceRules = new StringBuilder();
 		int debugConstantNum = 1;
@@ -113,9 +115,11 @@ public class Preprocessor {
 				StringBuilder debugConstant = new StringBuilder();
 				debugConstant.append(debugConstantPrefix);
 				debugConstant.append(debugConstantNum);
-				debugAtomRuleMap.put(debugConstantPrefix + debugConstantNum, rule.replace("\n", "").trim() + ".");
 				
 				List<String> variables = getVariables(rule.split(":-")[1]);
+
+				debugAtomRuleMap.put(debugConstantPrefix + debugConstantNum, new Rule(rule.replace("\n", "").trim() + ".", variables));
+				
 				if (variables.size() > 0) {
 					debugConstant.append("(");
 					debugConstant.append(variables.stream().collect(Collectors.joining(", ")));
@@ -146,7 +150,7 @@ public class Preprocessor {
 				preprocessedProgram.append(debugConstantPrefix);
 				preprocessedProgram.append(debugConstantNum);
 				preprocessedProgram.append(".");
-				debugAtomRuleMap.put(debugConstantPrefix + debugConstantNum, rule.replace("\n", "").trim() + ".");
+				debugAtomRuleMap.put(debugConstantPrefix + debugConstantNum, new Rule(rule.replace("\n", "").trim() + "."));
 				
 				debugChoiceRules.append("0{");
 				debugChoiceRules.append(debugConstantPrefix);

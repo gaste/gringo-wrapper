@@ -5,6 +5,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,8 @@ import java.util.Map;
 import org.hamcrest.collection.IsIterableContainingInAnyOrder;
 import org.junit.Before;
 import org.junit.Test;
+
+import at.aau.Rule;
 
 /**
  * Unit tests for {@link Postprocessor}.
@@ -877,7 +880,7 @@ public class PostprocessorTest {
 			  + "0\n"
 			  + "1";
 		
-		Map<String, String> debugRuleMap = new HashMap<String, String>();
+		Map<String, Rule> debugRuleMap = new HashMap<String, Rule>();
 		
 		List<String> removedRules = postprocessor.getRemovedRules(groundedProgram, debugRuleMap);
 		
@@ -913,9 +916,9 @@ public class PostprocessorTest {
 			  + "0\n"
 			  + "1";
 
-		Map<String, String> debugRuleMap = new HashMap<String, String>();
-		debugRuleMap.put("_debug1", "b(X) :- n(X).");
-		debugRuleMap.put("_debug2", "c :- a.");
+		Map<String, Rule> debugRuleMap = new HashMap<String, Rule>();
+		debugRuleMap.put("_debug1", new Rule("b(X) :- n(X).", Arrays.asList("X")));
+		debugRuleMap.put("_debug2", new Rule("c :- a."));
 		
 		List<String> removedRules = postprocessor.getRemovedRules(groundedProgram, debugRuleMap);
 		
@@ -945,9 +948,9 @@ public class PostprocessorTest {
 			  + "0\n"
 			  + "1";
 
-		Map<String, String> debugRuleMap = new HashMap<String, String>();
-		debugRuleMap.put("_debug1", "a(X) :- b(X), n(X).");
-		debugRuleMap.put("_debug2", "b(X) :- a(X), n(X).");
+		Map<String, Rule> debugRuleMap = new HashMap<String, Rule>();
+		debugRuleMap.put("_debug1", new Rule("a(X) :- b(X), n(X).", Arrays.asList("X")));
+		debugRuleMap.put("_debug2", new Rule("b(X) :- a(X), n(X).", Arrays.asList("X")));
 		
 		List<String> removedRules = postprocessor.getRemovedRules(groundedProgram, debugRuleMap);
 		
@@ -979,11 +982,11 @@ public class PostprocessorTest {
 			  + "0\n"
 			  + "1";
 
-		Map<String, String> debugRuleMap = new HashMap<String, String>();
-		debugRuleMap.put("_debug1", "a:-b.");
-		debugRuleMap.put("_debug2", "b:-c.");
-		debugRuleMap.put("_debug3", "c:-a.");
-		debugRuleMap.put("_debug4", "d:-a.");
+		Map<String, Rule> debugRuleMap = new HashMap<String, Rule>();
+		debugRuleMap.put("_debug1", new Rule("a:-b."));
+		debugRuleMap.put("_debug2", new Rule("b:-c."));
+		debugRuleMap.put("_debug3", new Rule("c:-a."));
+		debugRuleMap.put("_debug4", new Rule("d:-a."));
 		
 		List<String> removedRules = postprocessor.getRemovedRules(groundedProgram, debugRuleMap);
 		

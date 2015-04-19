@@ -7,6 +7,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import at.aau.Rule;
+
 /**
  * Postprocessor that replaces each artificial fact-rule with the fact and
  * removes the fact literal from the symbol table.
@@ -163,7 +165,7 @@ public class Postprocessor {
 	 *            The mapping of the _debug constants to the rules
 	 * @return The list of removed rules.
 	 */
-	public List<String> getRemovedRules(String groundedProgram, Map<String, String> debugRuleMap) {
+	public List<String> getRemovedRules(String groundedProgram, Map<String, Rule> debugRuleMap) {
 		List<String> removedRules = new ArrayList<String>();
 		String groundedRules = groundedProgram.split("(?m)^0$")[0];
 		
@@ -181,7 +183,7 @@ public class Postprocessor {
 			}
 			
 			if(!foundRule) {
-				removedRules.add(debugRuleMap.get(debugConstant));
+				removedRules.add(debugRuleMap.get(debugConstant).getRule());
 			}
 		}
 		

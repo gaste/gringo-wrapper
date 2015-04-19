@@ -6,11 +6,14 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import at.aau.Rule;
 
 /**
  * Unit tests for {@link Preprocessor}.
@@ -258,7 +261,7 @@ public class PreprocessorTest {
 			  + "  bb  .   dd . ";
 		
 		// act
-		Map<String, String> debugRuleMap = new HashMap<String, String>();
+		Map<String, Rule> debugRuleMap = new HashMap<String, Rule>();
 		String preprocessed = preprocessor.addDebugConstants(lp, "_debug", debugRuleMap);
 		
 		// assert
@@ -279,7 +282,7 @@ public class PreprocessorTest {
 			  + "num(15..20).  num    (     25     ..   30 ).";
 		
 		// act
-		Map<String, String> debugRuleMap = new HashMap<String, String>();
+		Map<String, Rule> debugRuleMap = new HashMap<String, Rule>();
 		String preprocessed = preprocessor.addDebugConstants(lp, "_debug", debugRuleMap);
 		
 		// assert
@@ -316,18 +319,18 @@ public class PreprocessorTest {
 			  + "0{_debug7}1.\n"
 			  + "0{_debug8}1.\n";
 		
-		Map<String, String> correctDebugRuleMap = new HashMap<String, String>();
-		correctDebugRuleMap.put("_debug1", "{a;b;c}.");
-		correctDebugRuleMap.put("_debug2", "{ _d1234_56890__12Asd    ;   e   ;     f   }.");
-		correctDebugRuleMap.put("_debug3", "{ pred(_a);  pred1 (  b , d )  ; pred (    c )   }.");
-		correctDebugRuleMap.put("_debug4", "1 { g; h   ; i } 3.");
-		correctDebugRuleMap.put("_debug5", "1 { pred3  (  a,  b ,    c  )   ; h   ; i } 3.");
-		correctDebugRuleMap.put("_debug6", "1{h;i;pred(d)}2.");
-		correctDebugRuleMap.put("_debug7", "12 { j; kssd12; l; m; pred3 (d, e, f) }.");
-		correctDebugRuleMap.put("_debug8", "{n;pred1(c,d);o;p}3.");
+		Map<String, Rule> correctDebugRuleMap = new HashMap<String, Rule>();
+		correctDebugRuleMap.put("_debug1", new Rule("{a;b;c}."));
+		correctDebugRuleMap.put("_debug2", new Rule("{ _d1234_56890__12Asd    ;   e   ;     f   }."));
+		correctDebugRuleMap.put("_debug3", new Rule("{ pred(_a);  pred1 (  b , d )  ; pred (    c )   }."));
+		correctDebugRuleMap.put("_debug4", new Rule("1 { g; h   ; i } 3."));
+		correctDebugRuleMap.put("_debug5", new Rule("1 { pred3  (  a,  b ,    c  )   ; h   ; i } 3."));
+		correctDebugRuleMap.put("_debug6", new Rule("1{h;i;pred(d)}2."));
+		correctDebugRuleMap.put("_debug7", new Rule("12 { j; kssd12; l; m; pred3 (d, e, f) }."));
+		correctDebugRuleMap.put("_debug8", new Rule("{n;pred1(c,d);o;p}3."));
 		
 		// act
-		Map<String, String> debugRuleMap = new HashMap<String, String>();
+		Map<String, Rule> debugRuleMap = new HashMap<String, Rule>();
 		String preprocessed = preprocessor.addDebugConstants(lp, "_debug", debugRuleMap);
 		
 		// assert
@@ -367,19 +370,19 @@ public class PreprocessorTest {
 			  + "0{_debug8}1.\n"
 			  + "0{_debug9(X, Y)}1 :-   pred(X), pred1(  X  , Y  ).\n";
 		
-		Map<String, String> correctDebugRuleMap = new HashMap<String, String>();
-		correctDebugRuleMap.put("_debug1", "{a;b;c} :- aa.");
-		correctDebugRuleMap.put("_debug2", "{ _d1234_56890__12Asd    ;   e   ;     f   }    :-   bb.");
-		correctDebugRuleMap.put("_debug3", "{ pred(_a);  pred1 (  b , d )  ; pred (    c )   }    :-  pred (  b   )  ,  pred (e).");
-		correctDebugRuleMap.put("_debug4", "1 { g; h   ; i } 3 :- ee, ff.");
-		correctDebugRuleMap.put("_debug5", "1 { pred3  (  a,  b ,    c  )   ; h   ; i } 3   :-   gg  ,   pred   (    b,    c ).");
-		correctDebugRuleMap.put("_debug6", "1{h;i;pred(d)}2:-a,b,pred(c).");
-		correctDebugRuleMap.put("_debug7", "12 { j; kssd12; l; m; pred3 (d, e, f) }  :-  pred(a , b),  dd.");
-		correctDebugRuleMap.put("_debug8", "{n;pred1(c,d);o;p}3 :- aa, bb, pred1(d,c).");
-		correctDebugRuleMap.put("_debug9", "{ _pred(X,Y)   ;    _pred (   X ) } :-  pred(X), pred1(  X  , Y  ).");
+		Map<String, Rule> correctDebugRuleMap = new HashMap<String, Rule>();
+		correctDebugRuleMap.put("_debug1", new Rule("{a;b;c} :- aa."));
+		correctDebugRuleMap.put("_debug2", new Rule("{ _d1234_56890__12Asd    ;   e   ;     f   }    :-   bb."));
+		correctDebugRuleMap.put("_debug3", new Rule("{ pred(_a);  pred1 (  b , d )  ; pred (    c )   }    :-  pred (  b   )  ,  pred (e)."));
+		correctDebugRuleMap.put("_debug4", new Rule("1 { g; h   ; i } 3 :- ee, ff."));
+		correctDebugRuleMap.put("_debug5", new Rule("1 { pred3  (  a,  b ,    c  )   ; h   ; i } 3   :-   gg  ,   pred   (    b,    c )."));
+		correctDebugRuleMap.put("_debug6", new Rule("1{h;i;pred(d)}2:-a,b,pred(c)."));
+		correctDebugRuleMap.put("_debug7", new Rule("12 { j; kssd12; l; m; pred3 (d, e, f) }  :-  pred(a , b),  dd."));
+		correctDebugRuleMap.put("_debug8", new Rule("{n;pred1(c,d);o;p}3 :- aa, bb, pred1(d,c)."));
+		correctDebugRuleMap.put("_debug9", new Rule("{ _pred(X,Y)   ;    _pred (   X ) } :-  pred(X), pred1(  X  , Y  ).", Arrays.asList("X", "Y")));
 		
 		// act
-		Map<String, String> debugRuleMap = new HashMap<String, String>();
+		Map<String, Rule> debugRuleMap = new HashMap<String, Rule>();
 		String preprocessed = preprocessor.addDebugConstants(lp, "_debug", debugRuleMap);
 		
 		// assert
@@ -406,15 +409,15 @@ public class PreprocessorTest {
 			  + "0{_debug4}1.\n"
 			  + "0{_debug5}1.\n";
 
-		Map<String, String> correctDebugRuleMap = new HashMap<String, String>();
-		correctDebugRuleMap.put("_debug1", "a|b.");
-		correctDebugRuleMap.put("_debug2", "c | _d1234_56890__12Asd | e.");
-		correctDebugRuleMap.put("_debug3", "fsdf   | g.");
-		correctDebugRuleMap.put("_debug4", "h | i.");
-		correctDebugRuleMap.put("_debug5", "pred(  _aaax,   _xd   )   |   pred1   (_xd ).");
+		Map<String, Rule> correctDebugRuleMap = new HashMap<String, Rule>();
+		correctDebugRuleMap.put("_debug1", new Rule("a|b."));
+		correctDebugRuleMap.put("_debug2", new Rule("c | _d1234_56890__12Asd | e."));
+		correctDebugRuleMap.put("_debug3", new Rule("fsdf   | g."));
+		correctDebugRuleMap.put("_debug4", new Rule("h | i."));
+		correctDebugRuleMap.put("_debug5", new Rule("pred(  _aaax,   _xd   )   |   pred1   (_xd )."));
 		
 		// act
-		Map<String, String> debugRuleMap = new HashMap<String, String>();
+		Map<String, Rule> debugRuleMap = new HashMap<String, Rule>();
 		String preprocessed = preprocessor.addDebugConstants(lp, "_debug", debugRuleMap);
 		
 		// assert
@@ -441,15 +444,15 @@ public class PreprocessorTest {
 			  + "0{_debug4}1.\n"
 			  + "0{_debug5(_Xd)}1 :-   pred3   ( _Xd   )  .\n";
 		
-		Map<String, String> correctDebugRuleMap = new HashMap<String, String>();
-		correctDebugRuleMap.put("_debug1","a|b:-aa.");
-		correctDebugRuleMap.put("_debug2","c | _d1234_56890__12Asd | e :- bb.");
-		correctDebugRuleMap.put("_debug3","fsdf   | g    :-    dd.");
-		correctDebugRuleMap.put("_debug4","h | i :-  ee.");
-		correctDebugRuleMap.put("_debug5","pred(  _aaax,   _Xd   )   |   pred1   (_Xd )   :-  pred3   ( _Xd   ).");
+		Map<String, Rule> correctDebugRuleMap = new HashMap<String, Rule>();
+		correctDebugRuleMap.put("_debug1", new Rule("a|b:-aa."));
+		correctDebugRuleMap.put("_debug2", new Rule("c | _d1234_56890__12Asd | e :- bb."));
+		correctDebugRuleMap.put("_debug3", new Rule("fsdf   | g    :-    dd."));
+		correctDebugRuleMap.put("_debug4", new Rule("h | i :-  ee."));
+		correctDebugRuleMap.put("_debug5", new Rule("pred(  _aaax,   _Xd   )   |   pred1   (_Xd )   :-  pred3   ( _Xd   ).", Arrays.asList("_Xd")));
 		
 		// act
-		Map<String, String> debugRuleMap = new HashMap<String, String>();
+		Map<String, Rule> debugRuleMap = new HashMap<String, Rule>();
 		String preprocessed = preprocessor.addDebugConstants(lp, "_debug", debugRuleMap);
 		
 		// assert
@@ -482,17 +485,17 @@ public class PreprocessorTest {
 			  + "0{_debug6}1.\n"
 			  + "0{_debug7(X)}1 :-      pred2  (   X, a   ).\n";
 
-		Map<String, String> correctDebugRuleMap = new HashMap<String, String>();
-		correctDebugRuleMap.put("_debug1","a :- b.");
-		correctDebugRuleMap.put("_debug2","z:-x.");
-		correctDebugRuleMap.put("_debug3","y:-x.");
-		correctDebugRuleMap.put("_debug4","c   :-   d,   e   ,   f.");
-		correctDebugRuleMap.put("_debug5","pred1(c) :- d,   e   ,   f.");
-		correctDebugRuleMap.put("_debug6","pred2    (   _fX01__234567809c   ,   a )   :-   pred1 (  _fX01__234567809c,   a ).");
-		correctDebugRuleMap.put("_debug7","pred1  ( X     )     :-     pred2  (   X, a   ).");
+		Map<String, Rule> correctDebugRuleMap = new HashMap<String, Rule>();
+		correctDebugRuleMap.put("_debug1", new Rule("a :- b."));
+		correctDebugRuleMap.put("_debug2", new Rule("z:-x."));
+		correctDebugRuleMap.put("_debug3", new Rule("y:-x."));
+		correctDebugRuleMap.put("_debug4", new Rule("c   :-   d,   e   ,   f."));
+		correctDebugRuleMap.put("_debug5", new Rule("pred1(c) :- d,   e   ,   f."));
+		correctDebugRuleMap.put("_debug6", new Rule("pred2    (   _fX01__234567809c   ,   a )   :-   pred1 (  _fX01__234567809c,   a )."));
+		correctDebugRuleMap.put("_debug7", new Rule("pred1  ( X     )     :-     pred2  (   X, a   ).", Arrays.asList("X")));
 		
 		// act
-		Map<String, String> debugRuleMap = new HashMap<String, String>();
+		Map<String, Rule> debugRuleMap = new HashMap<String, Rule>();
 		String preprocessed = preprocessor.addDebugConstants(lp, "_debug", debugRuleMap);
 		
 		// assert
@@ -519,15 +522,15 @@ public class PreprocessorTest {
 			  + "0{_debug4}1.\n"
 			  + "0{_debug5}1.\n";
 
-		Map<String, String> correctDebugRuleMap = new HashMap<String, String>();
-		correctDebugRuleMap.put("_debug1",":- a.");
-		correctDebugRuleMap.put("_debug2",":-b.");
-		correctDebugRuleMap.put("_debug3",":-c,d,e.");
-		correctDebugRuleMap.put("_debug4",":-       pred(a).");
-		correctDebugRuleMap.put("_debug5",":-   pred2   (   _x1290412805798436___124 ).");
+		Map<String, Rule> correctDebugRuleMap = new HashMap<String, Rule>();
+		correctDebugRuleMap.put("_debug1", new Rule(":- a."));
+		correctDebugRuleMap.put("_debug2", new Rule(":-b."));
+		correctDebugRuleMap.put("_debug3", new Rule(":-c,d,e."));
+		correctDebugRuleMap.put("_debug4", new Rule(":-       pred(a)."));
+		correctDebugRuleMap.put("_debug5", new Rule(":-   pred2   (   _x1290412805798436___124 )."));
 		
 		// act
-		Map<String, String> debugRuleMap = new HashMap<String, String>();
+		Map<String, Rule> debugRuleMap = new HashMap<String, Rule>();
 		String preprocessed = preprocessor.addDebugConstants(lp, "_debug", debugRuleMap);
 		
 		// assert
