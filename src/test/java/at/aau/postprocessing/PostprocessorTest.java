@@ -2,10 +2,19 @@ package at.aau.postprocessing;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.hamcrest.collection.IsIterableContainingInAnyOrder;
 import org.junit.Before;
 import org.junit.Test;
+
+import at.aau.Rule;
 
 /**
  * Unit tests for {@link Postprocessor}.
@@ -665,5 +674,322 @@ public class PostprocessorTest {
 		
 		// assert
 		assertEquals(expected, postprocessed);
+	}
+	
+	// =========================================================================
+	// addDebugChoiceRule tests
+	// =========================================================================
+	
+	@Test
+	public void addDebugChoiceRule_noDebugAtoms_returnsSame() {
+		// a.
+		// b:-a.
+		// c | d.
+		// {e;f}:-b,c.
+		// :- not e.
+		String groundedProgram =
+				"1 2 0 0\n"
+			  + "1 4 1 0 2\n"
+			  + "1 1 1 1 5\n"
+			  + "8 2 7 8 0 0\n"
+			  + "1 9 2 0 4 8\n"
+			  + "3 2 10 5 1 0 9\n"
+			  + "0\n"
+			  + "2 a\n"
+			  + "4 b\n"
+			  + "7 d\n"
+			  + "8 c\n"
+			  + "5 e\n"
+			  + "10 f\n"
+			  + "0\n"
+			  + "B+\n"
+			  + "0\n"
+			  + "B-\n"
+			  + "1\n"
+			  + "0\n"
+			  + "1";
+		
+		String postprocessed = postprocessor.addDebugChoiceRule(groundedProgram, "_debug");
+		
+		assertEquals(groundedProgram, postprocessed);
+	}
+	
+	@Test
+	public void addDebugChoiceRule_unaryDebugAtoms_returnsCorrect() {
+		// a.
+		// b:-a, _debug1.
+		// c | d :- _debug2.
+		// {e;f}:-b,c, _debug3.
+		// :- not e, _debug4.
+		String groundedProgram = 
+				"1 2 0 0\n"
+			  + "1 4 2 0 2 5\n"
+			  + "1 1 2 1 6 7\n"
+			  + "8 2 10 11 1 0 9\n"
+			  + "1 13 3 0 4 11 12\n"
+			  + "3 2 14 6 1 0 13\n"
+			  + "0\n"
+			  + "2 a\n"
+			  + "5 _debug1\n"
+			  + "4 b\n"
+			  + "9 _debug2\n"
+			  + "10 d\n"
+			  + "11 c\n"
+			  + "12 _debug3\n"
+			  + "6 e\n"
+			  + "14 f\n"
+			  + "7 _debug4\n"
+			  + "0\n"
+			  + "B+\n"
+			  + "0\n"
+			  + "B-\n"
+			  + "1\n"
+			  + "0\n"
+			  + "1";
+		
+		String expected =
+				"1 2 0 0\n"
+			  + "1 4 2 0 2 5\n"
+			  + "1 1 2 1 6 7\n"
+			  + "8 2 10 11 1 0 9\n"
+			  + "1 13 3 0 4 11 12\n"
+			  + "3 2 14 6 1 0 13\n"
+			  + "3 4 5 9 12 7 0 0\n"
+			  + "0\n"
+			  + "2 a\n"
+			  + "5 _debug1\n"
+			  + "4 b\n"
+			  + "9 _debug2\n"
+			  + "10 d\n"
+			  + "11 c\n"
+			  + "12 _debug3\n"
+			  + "6 e\n"
+			  + "14 f\n"
+			  + "7 _debug4\n"
+			  + "0\n"
+			  + "B+\n"
+			  + "0\n"
+			  + "B-\n"
+			  + "1\n"
+			  + "0\n"
+			  + "1";
+		
+		String postprocessed = postprocessor.addDebugChoiceRule(groundedProgram, "_debug");
+		
+		assertEquals(expected, postprocessed);
+	}
+	
+	@Test
+	public void addDebugChoiceRule_naryDebugAtoms_returnsCorrect() {
+		// a(1).a(abc9).a(_lD9e).
+		// b(X,X) :- a(X), _debug1(X).
+		// c(X) :- a(X), _debug2(X).
+		// d(X,Y) :- a(X), c(Y), d(X,Y), _debug3(X, Y).
+		String groundedProgram = 
+				"1 2 0 0\n"
+			  + "1 4 0 0\n"
+			  + "1 5 0 0\n"
+			  + "1 6 2 0 2 7\n"
+			  + "1 8 2 0 4 9\n"
+			  + "1 10 2 0 5 11\n"
+			  + "1 12 2 0 2 13\n"
+			  + "1 14 2 0 4 15\n"
+			  + "1 16 2 0 5 17\n"
+			  + "0\n"
+			  + "2 a(1)\n"
+			  + "4 a(abc9)\n"
+			  + "5 a(_lD9e)\n"
+			  + "7 _debug1(1)\n"
+			  + "9 _debug1(abc9)\n"
+			  + "11 _debug1(_lD9e)\n"
+			  + "6 b(1,1)\n"
+			  + "8 b(abc9,abc9)\n"
+			  + "10 b(_lD9e,_lD9e)\n"
+			  + "13 _debug2(1)\n"
+			  + "15 _debug2(abc9)\n"
+			  + "17 _debug2(_lD9e)\n"
+			  + "12 c(1)\n"
+			  + "14 c(abc9)\n"
+			  + "16 c(_lD9e)\n"
+			  + "0\n"
+			  + "B+\n"
+			  + "0\n"
+			  + "B-\n"
+			  + "1\n"
+			  + "0\n"
+			  + "1";
+		
+		String expected = 
+				"1 2 0 0\n"
+			  + "1 4 0 0\n"
+			  + "1 5 0 0\n"
+			  + "1 6 2 0 2 7\n"
+			  + "1 8 2 0 4 9\n"
+			  + "1 10 2 0 5 11\n"
+			  + "1 12 2 0 2 13\n"
+			  + "1 14 2 0 4 15\n"
+			  + "1 16 2 0 5 17\n"
+			  + "3 6 7 9 11 13 15 17 0 0\n"
+			  + "0\n"
+			  + "2 a(1)\n"
+			  + "4 a(abc9)\n"
+			  + "5 a(_lD9e)\n"
+			  + "7 _debug1(1)\n"
+			  + "9 _debug1(abc9)\n"
+			  + "11 _debug1(_lD9e)\n"
+			  + "6 b(1,1)\n"
+			  + "8 b(abc9,abc9)\n"
+			  + "10 b(_lD9e,_lD9e)\n"
+			  + "13 _debug2(1)\n"
+			  + "15 _debug2(abc9)\n"
+			  + "17 _debug2(_lD9e)\n"
+			  + "12 c(1)\n"
+			  + "14 c(abc9)\n"
+			  + "16 c(_lD9e)\n"
+			  + "0\n"
+			  + "B+\n"
+			  + "0\n"
+			  + "B-\n"
+			  + "1\n"
+			  + "0\n"
+			  + "1";
+		
+		String postprocessed = postprocessor.addDebugChoiceRule(groundedProgram, "_debug");
+		
+		assertEquals(expected, postprocessed);
+	}
+	
+	// =========================================================================
+	// getRemovedRules tests
+	// =========================================================================
+	@Test
+	public void getRemovedRules_noDebugConstants_returnsCorrect() {
+		// a.
+		// pred(1,2).
+		String groundedProgram = 
+				"1 2 0 0\n"
+			  + "1 4 0 0\n"
+			  + "0\n"
+			  + "2 a\n"
+			  + "4 pred(1,2)\n"
+			  + "0\n"
+			  + "B+\n"
+			  + "0\n"
+			  + "B-\n"
+			  + "1\n"
+			  + "0\n"
+			  + "1";
+		
+		Map<String, Rule> debugRuleMap = new HashMap<String, Rule>();
+		
+		List<String> removedRules = postprocessor.getRemovedRules(groundedProgram, debugRuleMap);
+		
+		assertTrue(removedRules.isEmpty());
+	}
+	
+	@Test
+	public void getRemovedRules_noneRemoved_returnsCorrect() { 
+		// a.
+		// n(1).
+		// b(X) :- n(X), _debug1(X).
+		// c :- a, _debug2.
+		//
+		// 0{_debug1(X)}1 :- n(X).
+		// 0{_debug2}1.		
+		String groundedProgram =
+				"1 2 0 0\n"
+			  + "1 4 0 0\n"
+			  + "1 5 2 0 4 6\n"
+			  + "1 7 2 0 2 8\n"
+			  + "0\n"
+			  + "2 a\n"
+			  + "4 n(1)\n"
+			  + "6 _debug1(1)\n"
+			  + "5 b(1)\n"
+			  + "8 _debug2\n"
+			  + "7 c\n"
+			  + "0\n"
+			  + "B+\n"
+			  + "0\n"
+			  + "B-\n"
+			  + "1\n"
+			  + "0\n"
+			  + "1";
+
+		Map<String, Rule> debugRuleMap = new HashMap<String, Rule>();
+		debugRuleMap.put("_debug1", new Rule("b(X) :- n(X).", Arrays.asList("X")));
+		debugRuleMap.put("_debug2", new Rule("c :- a."));
+		
+		List<String> removedRules = postprocessor.getRemovedRules(groundedProgram, debugRuleMap);
+		
+		assertTrue(removedRules.isEmpty());
+	}
+	
+	@Test
+	public void getRemovedRules_someRemovedDebugConstantsAlsoMissing_returnsCorrect() {
+		// n(1).
+		// n(2).
+		// a(X) :- b(X), n(X), _debug1(X).
+		// b(X) :- a(X), n(X), _debug2(X).
+		//
+		// 0{_debug1(X)}1 :- b(X), n(X).
+		// 0{_debug2(X)}1 :- a(X), n(X).		
+		String groundedProgram =
+				"1 2 0 0\n"
+			  + "1 4 0 0\n"
+			  + "0\n"
+			  + "2 n(1)\n"
+			  + "4 n(2)\n"
+			  + "0\n"
+			  + "B+\n"
+			  + "0\n"
+			  + "B-\n"
+			  + "1\n"
+			  + "0\n"
+			  + "1";
+
+		Map<String, Rule> debugRuleMap = new HashMap<String, Rule>();
+		debugRuleMap.put("_debug1", new Rule("a(X) :- b(X), n(X).", Arrays.asList("X")));
+		debugRuleMap.put("_debug2", new Rule("b(X) :- a(X), n(X).", Arrays.asList("X")));
+		
+		List<String> removedRules = postprocessor.getRemovedRules(groundedProgram, debugRuleMap);
+		
+		assertThat(removedRules, IsIterableContainingInAnyOrder.containsInAnyOrder("a(X) :- b(X), n(X).", "b(X) :- a(X), n(X)."));
+	}
+	
+	@Test
+	public void getRemovedRules_someRemovedDebugConstantsPresent_returnsCorrect() {
+		// a:-b, _debug1.
+		// b:-c, _debug2.
+		// c:-a, _debug3.
+		// d:-a, _debug4."
+		//
+		// 0{_debug1}1.
+		// 0{_debug2}1.
+		// 0{_debug3}1.
+		// 0{_debug4}1.		
+		String groundedProgram =
+				"0\n"
+			  + "6 _debug1\n"
+			  + "5 _debug2\n"
+			  + "4 _debug3\n"
+			  + "7 _debug4\n"
+			  + "0\n"
+			  + "B+\n"
+			  + "0\n"
+			  + "B-\n"
+			  + "1\n"
+			  + "0\n"
+			  + "1";
+
+		Map<String, Rule> debugRuleMap = new HashMap<String, Rule>();
+		debugRuleMap.put("_debug1", new Rule("a:-b."));
+		debugRuleMap.put("_debug2", new Rule("b:-c."));
+		debugRuleMap.put("_debug3", new Rule("c:-a."));
+		debugRuleMap.put("_debug4", new Rule("d:-a."));
+		
+		List<String> removedRules = postprocessor.getRemovedRules(groundedProgram, debugRuleMap);
+		
+		assertThat(removedRules, IsIterableContainingInAnyOrder.containsInAnyOrder("a:-b.", "b:-c.", "c:-a.", "d:-a."));
 	}
 }

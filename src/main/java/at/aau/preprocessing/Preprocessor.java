@@ -2,10 +2,13 @@ package at.aau.preprocessing;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import at.aau.Rule;
 
 /**
  * Preprocessor that replaces each fact by a rule.
@@ -41,6 +44,12 @@ public class Preprocessor {
 	private static final Pattern FACT_PATTERN = Pattern.compile(FACT_REGEX, Pattern.MULTILINE);
 	
 	private static final Pattern VARIABLE_PATTERN = Pattern.compile(VARIABLE_REGEX);
+	
+	private static final Pattern COMMENT_PATTERN = Pattern.compile(" *%.*$", Pattern.MULTILINE);
+	
+	public String removeComments(String logicProgram) {
+		return COMMENT_PATTERN.matcher(logicProgram).replaceAll("");
+	}
 
 	/**
 	 * Takes the given logic program and returns a new literal that is not
@@ -94,16 +103,19 @@ public class Preprocessor {
 	 *            The logic program to be modified.
 	 * @param debugConstantPrefix
 	 *            The prefix for the debug constants to be added.
+	 * @param debugAtomRuleMap
+	 *            Gets filled with mappings { _debug# -> rule | rule is a non
+	 *            fact rule}.
 	 * @return The modified logic program.
 	 */
 	public String addDebugConstants(String logicProgram,
-			String debugConstantPrefix) {
+			String debugConstantPrefix, Map<String, Rule> debugAtomRuleMap) {
 		StringBuilder preprocessedProgram = new StringBuilder(logicProgram.length());
 		StringBuilder debugChoiceRules = new StringBuilder();
 		int debugConstantNum = 1;
 		
 		// split the program into rules. The regex matches only a single '.'
-		for (String rule : logicProgram.split("(?=((?<!\\.)\\.(?!\\.)))")) {
+		for (String rule : logicProgram.split("(?<!\\.)\\.(?!\\.)")) {
 			if (rule.contains(":-")) {
 				// rule, identified by ':-', thus add ', _debug#' to the rule
 				StringBuilder debugConstant = new StringBuilder();
@@ -111,6 +123,9 @@ public class Preprocessor {
 				debugConstant.append(debugConstantNum);
 				
 				List<String> variables = getVariables(rule.split(":-")[1]);
+
+				debugAtomRuleMap.put(debugConstantPrefix + debugConstantNum, new Rule(rule.replace("\n", "").trim() + ".", variables));
+				
 				if (variables.size() > 0) {
 					debugConstant.append("(");
 					debugConstant.append(variables.stream().collect(Collectors.joining(", ")));
@@ -120,6 +135,7 @@ public class Preprocessor {
 				preprocessedProgram.append(rule);
 				preprocessedProgram.append(", ");
 				preprocessedProgram.append(debugConstant);
+				preprocessedProgram.append(".");
 				
 				debugChoiceRules.append("0{");
 				debugChoiceRules.append(debugConstant);
@@ -139,6 +155,8 @@ public class Preprocessor {
 				preprocessedProgram.append(" :- ");
 				preprocessedProgram.append(debugConstantPrefix);
 				preprocessedProgram.append(debugConstantNum);
+				preprocessedProgram.append(".");
+				debugAtomRuleMap.put(debugConstantPrefix + debugConstantNum, new Rule(rule.replace("\n", "").trim() + "."));
 				
 				debugChoiceRules.append("0{");
 				debugChoiceRules.append(debugConstantPrefix);
@@ -149,6 +167,11 @@ public class Preprocessor {
 			} else {
 				// fact, thus do not alter it
 				preprocessedProgram.append(rule);
+				
+				// only add delimiting . if the rule is not empty
+				if (rule.trim().length() > 0) {
+					preprocessedProgram.append(".");
+				}
 			}
 		}
 		

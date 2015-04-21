@@ -1,8 +1,13 @@
 package at.aau;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import at.aau.grounder.Grounder;
 import at.aau.grounder.GrounderGringoImpl;
 import at.aau.grounder.GroundingException;
+import at.aau.output.OutputBuilder;
 import at.aau.postprocessing.PostprocessingException;
 import at.aau.postprocessing.Postprocessor;
 import at.aau.preprocessing.Preprocessor;
@@ -24,14 +29,18 @@ public class GringoWrapper {
 	/** The postprocessor that replaces the fact-rules with the original facts */
 	private Postprocessor postprocessor;
 	
+	/** The output buider that computes the symbol table output */
+	private OutputBuilder outputBuilder;
+	
 	private final String DEBUG_CONSTANT_PREFIX;
 	
 	private final boolean rewriteOnly;
 
 	public GringoWrapper(String grounderCommand, String grounderOptions, String debugConstantPrefix, boolean rewriteOnly) {
-		grounder = new GrounderGringoImpl(grounderCommand, grounderOptions);
-		preprocessor = new Preprocessor();
-		postprocessor = new Postprocessor();
+		this.grounder = new GrounderGringoImpl(grounderCommand, grounderOptions);
+		this.preprocessor = new Preprocessor();
+		this.postprocessor = new Postprocessor();
+		this.outputBuilder = new OutputBuilder();
 		this.DEBUG_CONSTANT_PREFIX = debugConstantPrefix;
 		this.rewriteOnly = rewriteOnly;
 	}
@@ -50,22 +59,41 @@ public class GringoWrapper {
 	 */
 	public String ground(String logicProgram, boolean addDebugConstants)
 			throws GroundingException, PostprocessingException {
+		Map<String, Rule> debugRuleMap = new HashMap<String, Rule>();
+		
 		String factLiteral = preprocessor.getFactLiteral(logicProgram);
-		String preprocessedLp1 = logicProgram;
+		logicProgram = preprocessor.removeComments(logicProgram);
 		
 		if (addDebugConstants) {
-			preprocessedLp1 = preprocessor.addDebugConstants(logicProgram, DEBUG_CONSTANT_PREFIX);			
+			logicProgram = preprocessor.addDebugConstants(logicProgram, DEBUG_CONSTANT_PREFIX, debugRuleMap);			
 		}
 		
 		if (rewriteOnly) {
-			return preprocessedLp1;
+			return logicProgram;
 		}
 		
-		String preprocessedLp2 = preprocessor.addFactLiteral(preprocessedLp1, factLiteral);
-		String groundedPreprocessedLp = grounder.ground(preprocessedLp2);
-		String groundedLpNoFactliteral = postprocessor.removeFactLiteral(groundedPreprocessedLp, factLiteral);
-		String groundedLp = postprocessor.removeDebugChoiceRules(groundedLpNoFactliteral, DEBUG_CONSTANT_PREFIX);
-
-		return groundedLp;
+		logicProgram = preprocessor.addFactLiteral(logicProgram, factLiteral);
+		logicProgram = grounder.ground(logicProgram);
+		logicProgram = postprocessor.removeFactLiteral(logicProgram, factLiteral);
+		
+		if(addDebugConstants) {
+			logicProgram = postprocessor.removeDebugChoiceRules(logicProgram, DEBUG_CONSTANT_PREFIX);
+			logicProgram = postprocessor.addDebugChoiceRule(logicProgram, DEBUG_CONSTANT_PREFIX);
+			warnRulesRemoved(postprocessor.getRemovedRules(logicProgram, debugRuleMap));
+			logicProgram += outputBuilder.buildRuleTable(debugRuleMap);
+		}
+		
+		return logicProgram;
+	}
+	
+	private void warnRulesRemoved(List<String> removedRules) {
+		if (removedRules.isEmpty())
+			return;
+		
+		System.err.println("warning: the grounder removed the following rules:");
+		
+		for (String rule : removedRules) {
+			System.err.println("  " + rule);
+		}
 	}
 }

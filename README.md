@@ -6,7 +6,7 @@ b :- a.
 ```
 leads to the grounded output ``a. b.`` Calling gringo-wrapper with the same logic program does not perform any optimizations.
 
-Furthermore, (unless the ``--no-debug`` option is present) the gringo-wrapper adds a new unique constant ``_debug#(V1, ...)`` to the body of each non-fact rule of the logic program, where ``#`` is an integer starting from 1 to the number of non-fact rules in the logic program, and ``(V1, ...)`` is the list of all variables used in the rule (if any). The prefix of the constants can be specified using the ``--debug-constant`` option. 
+Furthermore, (unless the ``--no-debug`` option is present) the gringo-wrapper adds a new unique constant ``_debug#(V1, ...)`` to the body of each non-fact rule of the logic program, where ``#`` is an integer starting from 1 to the number of non-fact rules in the logic program, and ``(V1, ...)`` is the list of all variables used in the rule (if any). In addition to adding the ``_debug`` constants to the body of the rules, one choice rule containing all debug constants is added to the program. The prefix of the constants can be specified using the ``--debug-constant`` option.
 
 <p align="center">
 <a href="https://github.com/gaste/gringo-wrapper/releases/latest"><img src="https://img.shields.io/github/release/gaste/gringo-wrapper.svg" alt="Latest Version"></img></a>
@@ -28,9 +28,7 @@ gringo-wrapper [options] [files]
  - Call `gringo-wrapper -h` for all options.
 
 ## Building
-This project is managed using [Apache Maven](https://maven.apache.org/).
-
-### Instructions
+This project is managed using [Apache Maven](https://maven.apache.org/). To build it, clone the repository and execute the `package` goal from maven:
 
 ```
 git clone https://github.com/gaste/gringo-wrapper
@@ -42,3 +40,20 @@ This will create a `.zip` and `.tar.gz` file containing the Java archive as well
 
 ## How it works
 The gringo-wrapper replaces each fact ``f`` of the logic program with the rule ``f :- _l``, where ``_l`` is a new literal. Adding the rule ``_l | -_l`` ensures that gringo cannot do any optimization, since there are no facts in the logic program. After this modification, the gringo wrapper uses gringo to ground the modified logic program. Then it replaces each grounded rule ``f :- _l`` with the fact ``f.`` and removes the artificial literal ``_l``.
+
+## Debug atom map
+Unless the ``--no-debug`` option is present, the gringo-wrapper also appends a mapping of the debug constants to the rules at the end of the ground program. The entries of the debug atom map are of the following form:
+```
+10 _debug# #vars variables rule
+```
+
+For example, consider the following preprocessed logic program:
+```
+a :- b, _debug1.
+pred(X,Y) :- n(X), n(Y), _debug2(X,Y).
+```
+The debug atom map of this program is
+```
+10 _debug1 0 a :- b.
+10 _debug2 2 X Y pred(X,Y) :- n(X), n(Y).
+```
