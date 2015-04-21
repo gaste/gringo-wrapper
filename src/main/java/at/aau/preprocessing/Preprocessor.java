@@ -44,6 +44,12 @@ public class Preprocessor {
 	private static final Pattern FACT_PATTERN = Pattern.compile(FACT_REGEX, Pattern.MULTILINE);
 	
 	private static final Pattern VARIABLE_PATTERN = Pattern.compile(VARIABLE_REGEX);
+	
+	private static final Pattern COMMENT_PATTERN = Pattern.compile(" *%.*$", Pattern.MULTILINE);
+	
+	public String removeComments(String logicProgram) {
+		return COMMENT_PATTERN.matcher(logicProgram).replaceAll("");
+	}
 
 	/**
 	 * Takes the given logic program and returns a new literal that is not

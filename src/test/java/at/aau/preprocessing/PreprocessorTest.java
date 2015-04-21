@@ -30,7 +30,54 @@ public class PreprocessorTest {
 		// create a new instance of the class under test
 		preprocessor = new Preprocessor();
 	}
+
+	// =========================================================================
+	// removeComments tests
+	// =========================================================================
+	@Test
+	public void removeComments_noComments_returnsSame() {
+		String logicProgram = 
+				"a. b(1).\n"
+			  + "c :- a.\n"
+			  + "d(X) :- b(1)\n";
+		
+		String preprocessed = preprocessor.removeComments(logicProgram);
+		
+		assertEquals(logicProgram, preprocessed);
+	}
 	
+	@Test
+	public void removeComments_lineComments_returnsCorrect() {
+		String logicProgram = 
+				"% description of the program.\n"
+			  + "a(X) :- b(X, _).\n"
+			  + "b(1,2).\n"
+			  + "   %   end of program"
+			  + "%c :- a(X).";
+		
+		String expected = 
+			    "\na(X) :- b(X, _).\n"
+			  + "b(1,2).\n";
+		
+		String preprocessed = preprocessor.removeComments(logicProgram);
+		
+		assertEquals(expected, preprocessed);
+	}
+	
+	@Test
+	public void removeComments_inlineComments_returnsCorrect() {
+		String logicProgram = 
+				"a(X) :- b(X, _).%description of this line of code\n"
+			  + "d :- a(X).  %  comment";
+		
+		String expected =
+				"a(X) :- b(X, _).\n"
+			  + "d :- a(X).";
+		
+		String preprocessed = preprocessor.removeComments(logicProgram);
+		
+		assertEquals(expected, preprocessed);
+	}
 
 	// =========================================================================
 	// getFactLiteral tests

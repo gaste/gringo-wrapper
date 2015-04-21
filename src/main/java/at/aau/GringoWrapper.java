@@ -60,30 +60,30 @@ public class GringoWrapper {
 	public String ground(String logicProgram, boolean addDebugConstants)
 			throws GroundingException, PostprocessingException {
 		Map<String, Rule> debugRuleMap = new HashMap<String, Rule>();
+		
 		String factLiteral = preprocessor.getFactLiteral(logicProgram);
-		String preprocessedLp1 = logicProgram;
+		logicProgram = preprocessor.removeComments(logicProgram);
 		
 		if (addDebugConstants) {
-			preprocessedLp1 = preprocessor.addDebugConstants(logicProgram, DEBUG_CONSTANT_PREFIX, debugRuleMap);			
+			logicProgram = preprocessor.addDebugConstants(logicProgram, DEBUG_CONSTANT_PREFIX, debugRuleMap);			
 		}
 		
 		if (rewriteOnly) {
-			return preprocessedLp1;
+			return logicProgram;
 		}
 		
-		String preprocessedLp2 = preprocessor.addFactLiteral(preprocessedLp1, factLiteral);
-		String groundedPreprocessedLp = grounder.ground(preprocessedLp2);
-		String groundedLpNoFactliteral = postprocessor.removeFactLiteral(groundedPreprocessedLp, factLiteral);
-		String groundedLp = groundedLpNoFactliteral;
+		logicProgram = preprocessor.addFactLiteral(logicProgram, factLiteral);
+		logicProgram = grounder.ground(logicProgram);
+		logicProgram = postprocessor.removeFactLiteral(logicProgram, factLiteral);
 		
 		if(addDebugConstants) {
-			String groundedLpNoSingleChoiceRules = postprocessor.removeDebugChoiceRules(groundedLpNoFactliteral, DEBUG_CONSTANT_PREFIX);
-			groundedLp = postprocessor.addDebugChoiceRule(groundedLpNoSingleChoiceRules, DEBUG_CONSTANT_PREFIX);
-			warnRulesRemoved(postprocessor.getRemovedRules(groundedLpNoSingleChoiceRules, debugRuleMap));
-			groundedLp += outputBuilder.buildRuleTable(debugRuleMap);
+			logicProgram = postprocessor.removeDebugChoiceRules(logicProgram, DEBUG_CONSTANT_PREFIX);
+			logicProgram = postprocessor.addDebugChoiceRule(logicProgram, DEBUG_CONSTANT_PREFIX);
+			warnRulesRemoved(postprocessor.getRemovedRules(logicProgram, debugRuleMap));
+			logicProgram += outputBuilder.buildRuleTable(debugRuleMap);
 		}
 		
-		return groundedLp;
+		return logicProgram;
 	}
 	
 	private void warnRulesRemoved(List<String> removedRules) {
