@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import at.aau.Rule;
 
@@ -144,11 +143,17 @@ public class Postprocessor {
 		}
 		
 		if (debugConstantSymbols.size() > 0) {
+			String heads = "";
+
+			for (String debugConstantSymbol : debugConstantSymbols) {
+				heads += debugConstantSymbol + " ";
+			}
+			
 			// build the choice rule
 			String choiceRule = "3 " // rule type: choice rule
 							  + debugConstantSymbols.size() + " " // #heads
-							  + debugConstantSymbols.stream().collect(Collectors.joining(" ")) // heads 
-							  + " 0 0"; // #literals #negative
+							  + heads // heads 
+							  + "0 0"; // #literals #negative
 			
 			groundedProgram = groundedProgram.replaceFirst("(?m)^0$", choiceRule + "\n0");
 		}

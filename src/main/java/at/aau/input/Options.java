@@ -44,6 +44,9 @@ public class Options {
 	@Parameter(names = { "-go", "--grounder-options" }, description = "Command line options passed to the grounder")
 	private String grounderOptions = "";
 	
+	@Parameter(names = { "-nc", "--no-cleanup" }, description = "Do not remove the choice rules during postprocessing." )
+	private boolean noCleanup = false;
+	
 	/**
 	 * Parse the given command line arguments.
 	 * 
@@ -94,6 +97,10 @@ public class Options {
 
 	public boolean isDebug() {
 		return !noDebug;
+	}
+	
+	public boolean isRemoveDebugChoicerules() {
+		return !noCleanup;
 	}
 
 	public String getDebugLiteral() {

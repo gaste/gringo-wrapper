@@ -48,19 +48,20 @@ public class App {
 					cliOptions.getGrounderCommand(),
 					cliOptions.getGrounderOptions(),
 					cliOptions.getDebugLiteral(),
-					cliOptions.isRewriteOnly());
+					cliOptions.isRewriteOnly(),
+					cliOptions.isRemoveDebugChoicerules());
 			
 			System.out.print(wrapper.ground(input, cliOptions.isDebug()));
 		} catch (InvalidOptionException e) {
 			System.err.println(e.getMessage());
 		} catch (FileNotFoundException e) {
-			System.err.println("The input file was not found.");
+			System.err.println("The input file was not found. Details:\n" + e.getMessage());
 		} catch (IOException e) {
-			System.err.println("Could not read the logic program.");
+			System.err.println("Could not read the logic program. Details:\n" + e.getMessage());
 		} catch (GroundingException e) {
 			System.err.println("The program could not be grounded. Details:\n" + e.getMessage());
 		} catch (PostprocessingException e) {
-			System.err.println("Postprocessing the grounded program failed.");
+			System.err.println("Postprocessing the grounded program failed. Details:\n" + e.getMessage());
 		}
 	}
 	

@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import at.aau.Rule;
 
@@ -128,7 +127,11 @@ public class Preprocessor {
 				
 				if (variables.size() > 0) {
 					debugConstant.append("(");
-					debugConstant.append(variables.stream().collect(Collectors.joining(", ")));
+					debugConstant.append(variables.get(0));
+					for (int i = 1; i < variables.size(); i ++) {
+						debugConstant.append(", ");
+						debugConstant.append(variables.get(i));
+					}
 					debugConstant.append(")");
 				}
 				
