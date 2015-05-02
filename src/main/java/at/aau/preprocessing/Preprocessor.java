@@ -110,7 +110,7 @@ public class Preprocessor {
 	public String addDebugConstants(String logicProgram,
 			String debugConstantPrefix, Map<String, Rule> debugAtomRuleMap) {
 		StringBuilder preprocessedProgram = new StringBuilder(logicProgram.length());
-		StringBuilder debugChoiceRules = new StringBuilder();
+		StringBuilder debugRules = new StringBuilder();
 		int debugConstantNum = 1;
 		
 		// split the program into rules. The regex matches only a single '.'
@@ -140,16 +140,14 @@ public class Preprocessor {
 				preprocessedProgram.append(debugConstant);
 				preprocessedProgram.append(".");
 				
-				debugChoiceRules.append("0{");
-				debugChoiceRules.append(debugConstant);
-				debugChoiceRules.append("}1");
+				debugRules.append(debugConstant);
 				
 				if (variables.size() > 0) {
-					debugChoiceRules.append(" :- ");
-					debugChoiceRules.append(rule.split(":-")[1]);
+					debugRules.append(" :- ");
+					debugRules.append(rule.split(":-")[1]);
 				}
 				
-				debugChoiceRules.append(".\n");
+				debugRules.append(".\n");
 				
 				debugConstantNum ++;
 			} else if (rule.contains("|") || (rule.contains("{") && rule.contains("}"))) {
@@ -161,10 +159,9 @@ public class Preprocessor {
 				preprocessedProgram.append(".");
 				debugAtomRuleMap.put(debugConstantPrefix + debugConstantNum, new Rule(rule.replace("\n", "").trim() + "."));
 				
-				debugChoiceRules.append("0{");
-				debugChoiceRules.append(debugConstantPrefix);
-				debugChoiceRules.append(debugConstantNum);
-				debugChoiceRules.append("}1.\n");
+				debugRules.append(debugConstantPrefix);
+				debugRules.append(debugConstantNum);
+				debugRules.append(".\n");
 				
 				debugConstantNum ++;
 			} else {
@@ -181,7 +178,7 @@ public class Preprocessor {
 		// add choice rule for debug constants
 		if (debugConstantNum > 1) {
 			preprocessedProgram.append("\n");
-			preprocessedProgram.append(debugChoiceRules);
+			preprocessedProgram.append(debugRules);
 		}
 		
 		return preprocessedProgram.toString();

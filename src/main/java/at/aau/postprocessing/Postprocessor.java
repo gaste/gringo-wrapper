@@ -1,8 +1,13 @@
 package at.aau.postprocessing;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -85,8 +90,7 @@ public class Postprocessor {
 	}
 	
 	/**
-	 * Removes the choice rules of the _debug constants from the grounded
-	 * program.
+	 * Removes the rules of the _debug constants from the grounded program.
 	 * 
 	 * @param groundedProgram
 	 *            The program from which the choice rules should be removed.
@@ -94,26 +98,43 @@ public class Postprocessor {
 	 *            The prefix of the debug constants.
 	 * @return The postprocessed grounded programm.
 	 */
-	public String removeDebugChoiceRules(String groundedProgram,
+	public String removeDebugRules(String groundedProgram,
 			String debugConstantPrefix) {
+		Set<String> debugSymbols = new HashSet<String>();
 		Matcher debugConstantSymbolMatcher = getDebugConstantSymbolMatcher(groundedProgram, debugConstantPrefix);
 		
 		while(debugConstantSymbolMatcher.find()) {
-			String debugConstantSymbol = debugConstantSymbolMatcher.group(1);
-			Matcher debugChoiceRuleBodyMatcher = Pattern.compile("^3 1 " + debugConstantSymbol + " 1 0 (\\d+)\n", Pattern.MULTILINE).matcher(groundedProgram);
-			
-			if (debugChoiceRuleBodyMatcher.find()) {
-				// found a body for the debug choice rule, so delete it and the rule itself
-				String debugChoiceRuleBodySymbol = debugChoiceRuleBodyMatcher.group(1);
-				groundedProgram = debugChoiceRuleBodyMatcher.replaceAll("");
-				groundedProgram = groundedProgram.replaceAll("(?m)^1 " + debugChoiceRuleBodySymbol + "( \\d+)*\n", "");
-			} else {
-				// no body for the debug choice rule, so delete the choice rule itself only
-				groundedProgram = groundedProgram.replaceAll("(?m)^3 1 " + debugConstantSymbol + " 0 0\n" , "");
-			}
+			debugSymbols.add(debugConstantSymbolMatcher.group(1));
 		}
 		
-		return groundedProgram;
+		Pattern normalRuleHeadPattern = Pattern.compile("^1 (\\d+)");
+		BufferedReader programReader = new BufferedReader(new StringReader(groundedProgram));
+		StringBuilder postprocessed = new StringBuilder(groundedProgram.length());
+		Matcher normalRuleMatcher = null;
+		boolean parsingRules = true;
+		String line = null;
+		
+		try {
+			while ((line = programReader.readLine()) != null) {
+				if (parsingRules && line.equals("0")) { // end of rule block
+					postprocessed.append("0\n");
+					parsingRules = false;
+				} else if (parsingRules) { // inside rule blcok
+					normalRuleMatcher = normalRuleHeadPattern.matcher(line);
+					if (!normalRuleMatcher.find() || !debugSymbols.contains(normalRuleMatcher.group(1))) {
+						postprocessed.append(line);
+						postprocessed.append('\n');
+					}
+				} else {
+					postprocessed.append(line);
+					postprocessed.append('\n');
+				}
+			}
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		
+		return postprocessed.toString();
 	}
 
 	private Matcher getDebugConstantSymbolMatcher(String groundedProgram,

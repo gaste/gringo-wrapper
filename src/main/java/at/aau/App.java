@@ -48,8 +48,7 @@ public class App {
 					cliOptions.getGrounderCommand(),
 					cliOptions.getGrounderOptions(),
 					cliOptions.getDebugLiteral(),
-					cliOptions.isRewriteOnly(),
-					cliOptions.isRemoveDebugChoicerules());
+					cliOptions.isRewriteOnly());
 			
 			System.out.print(wrapper.ground(input, cliOptions.isDebug()));
 		} catch (InvalidOptionException e) {
