@@ -48,9 +48,12 @@ public class App {
 					cliOptions.getGrounderCommand(),
 					cliOptions.getGrounderOptions(),
 					cliOptions.getDebugLiteral(),
-					cliOptions.isRewriteOnly());
+					cliOptions.isRewriteOnly(),
+					cliOptions.isWarnRulesRemoved());
 			
-			System.out.print(wrapper.ground(input, cliOptions.isDebug()));
+			String grounded = wrapper.ground(input, cliOptions.isDebug());
+			
+			System.out.print(grounded);
 		} catch (InvalidOptionException e) {
 			System.err.println(e.getMessage());
 		} catch (FileNotFoundException e) {

@@ -35,6 +35,9 @@ public class Options {
 	@Parameter(names = { "-r", "--rewrite-only" }, description = "Add the '_debug' literals and output the program without grounding")
 	private boolean rewriteOnly = false;
 
+	@Parameter(names = { "-nw", "--no-warn-rules" }, description = "Do not warn if rules where removed")
+	private boolean noWarnRemovedRules = false;
+	
 	@Parameter(names = { "-d", "--debug-constant" }, description = "The debug constant to be added to the rules")
 	private String debugLiteral = "_debug";
 
@@ -94,6 +97,10 @@ public class Options {
 
 	public boolean isDebug() {
 		return !noDebug;
+	}
+	
+	public boolean isWarnRulesRemoved() {
+		return !noWarnRemovedRules;
 	}
 	
 	public String getDebugLiteral() {
