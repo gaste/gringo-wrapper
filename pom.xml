@@ -8,7 +8,7 @@
 
   <groupId>at.aau</groupId>
   <artifactId>gringo-wrapper</artifactId>
-  <version>1.4</version>
+  <version>1.5</version>
   <packaging>jar</packaging>
 
   <name>gringo-wrapper</name>
@@ -63,6 +63,8 @@
           <repositoryLayout>flat</repositoryLayout>
           <repositoryName>lib</repositoryName>
           <installArtifacts>false</installArtifacts>
+          <!-- increase allowed heap size -->
+          <extraJvmArguments>-Xmx32g</extraJvmArguments>
           <!-- generate bin scripts for windows and unix -->
           <platforms>
             <platform>windows</platform>

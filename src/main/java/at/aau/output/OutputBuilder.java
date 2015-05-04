@@ -29,21 +29,21 @@ public class OutputBuilder {
 		for (String debugConstant : debugRuleMap.keySet()) {
 			Rule rule = debugRuleMap.get(debugConstant);
 			ruleTable.append(DEBUG_RULE_MAP_TYPE);
-			ruleTable.append(" ");
+			ruleTable.append(' ');
 			ruleTable.append(debugConstant);
-			ruleTable.append(" ");
+			ruleTable.append(' ');
 			ruleTable.append(rule.getVariables().size());
-			ruleTable.append(" ");
+			ruleTable.append(' ');
 			for (String variable : rule.getVariables()) {
 				ruleTable.append(variable);
-				ruleTable.append(" ");
+				ruleTable.append(' ');
 			}
 			ruleTable.append(rule.getRule());
-			ruleTable.append("\n");
+			ruleTable.append('\n');
 		}
 
 		ruleTable.append(DEBUG_RULE_MAP_END);
-		ruleTable.append("\n");
+		ruleTable.append('\n');
 
 		return ruleTable.toString();
 	}

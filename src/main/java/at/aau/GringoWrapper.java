@@ -35,14 +35,17 @@ public class GringoWrapper {
 	private final String DEBUG_CONSTANT_PREFIX;
 	
 	private final boolean rewriteOnly;
+	
+	private final boolean warnRulesRemoved;
 
-	public GringoWrapper(String grounderCommand, String grounderOptions, String debugConstantPrefix, boolean rewriteOnly) {
+	public GringoWrapper(String grounderCommand, String grounderOptions, String debugConstantPrefix, boolean rewriteOnly, boolean warnRulesRemoved) {
 		this.grounder = new GrounderGringoImpl(grounderCommand, grounderOptions);
 		this.preprocessor = new Preprocessor();
 		this.postprocessor = new Postprocessor();
 		this.outputBuilder = new OutputBuilder();
 		this.DEBUG_CONSTANT_PREFIX = debugConstantPrefix;
 		this.rewriteOnly = rewriteOnly;
+		this.warnRulesRemoved = warnRulesRemoved;
 	}
 
 	/**
@@ -74,13 +77,17 @@ public class GringoWrapper {
 		
 		logicProgram = preprocessor.addFactLiteral(logicProgram, factLiteral);
 		logicProgram = grounder.ground(logicProgram);
-		logicProgram = postprocessor.removeFactLiteral(logicProgram, factLiteral);
-		
-		if(addDebugConstants) {
-			logicProgram = postprocessor.removeDebugChoiceRules(logicProgram, DEBUG_CONSTANT_PREFIX);
-			logicProgram = postprocessor.addDebugChoiceRule(logicProgram, DEBUG_CONSTANT_PREFIX);
-			warnRulesRemoved(postprocessor.getRemovedRules(logicProgram, debugRuleMap));
-			logicProgram += outputBuilder.buildRuleTable(debugRuleMap);
+		logicProgram = postprocessor.performPostprocessing(logicProgram, DEBUG_CONSTANT_PREFIX, factLiteral);
+
+		if (addDebugConstants) {
+			if (warnRulesRemoved) {
+				warnRulesRemoved(postprocessor.getRemovedRules(logicProgram, debugRuleMap));
+			}
+
+			StringBuilder lp = new StringBuilder(logicProgram.length());
+			lp.append(logicProgram);
+			lp.append(outputBuilder.buildRuleTable(debugRuleMap));
+			logicProgram = lp.toString();
 		}
 		
 		return logicProgram;

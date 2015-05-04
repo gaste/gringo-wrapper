@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import at.aau.Rule;
 
@@ -47,6 +46,8 @@ public class Preprocessor {
 	
 	private static final Pattern COMMENT_PATTERN = Pattern.compile(" *%.*$", Pattern.MULTILINE);
 	
+	private static final Pattern AGGREGATE_PATTERN = Pattern.compile("[^\\{\\},]*\\{[^\\{\\}]*?\\}[^\\{\\},]*");
+		
 	public String removeComments(String logicProgram) {
 		return COMMENT_PATTERN.matcher(logicProgram).replaceAll("");
 	}
@@ -111,8 +112,11 @@ public class Preprocessor {
 	public String addDebugConstants(String logicProgram,
 			String debugConstantPrefix, Map<String, Rule> debugAtomRuleMap) {
 		StringBuilder preprocessedProgram = new StringBuilder(logicProgram.length());
-		StringBuilder debugChoiceRules = new StringBuilder();
+		StringBuilder debugRules = new StringBuilder();
 		int debugConstantNum = 1;
+		
+		Pattern aggregateTerm1 = Pattern.compile(AGGREGATE_PATTERN.pattern() + ",");
+		Pattern aggregateTerm2 = Pattern.compile("," + AGGREGATE_PATTERN.pattern() + "(?!,)");
 		
 		// split the program into rules. The regex matches only a single '.'
 		for (String rule : logicProgram.split("(?<!\\.)\\.(?!\\.)")) {
@@ -128,7 +132,11 @@ public class Preprocessor {
 				
 				if (variables.size() > 0) {
 					debugConstant.append("(");
-					debugConstant.append(variables.stream().collect(Collectors.joining(", ")));
+					debugConstant.append(variables.get(0));
+					for (int i = 1; i < variables.size(); i ++) {
+						debugConstant.append(", ");
+						debugConstant.append(variables.get(i));
+					}
 					debugConstant.append(")");
 				}
 				
@@ -137,16 +145,19 @@ public class Preprocessor {
 				preprocessedProgram.append(debugConstant);
 				preprocessedProgram.append(".");
 				
-				debugChoiceRules.append("0{");
-				debugChoiceRules.append(debugConstant);
-				debugChoiceRules.append("}1");
+				debugRules.append(debugConstant);
 				
 				if (variables.size() > 0) {
-					debugChoiceRules.append(" :- ");
-					debugChoiceRules.append(rule.split(":-")[1]);
+					debugRules.append(" :- ");
+					String r = rule.split(":-")[1];
+					r=aggregateTerm1.matcher(r).replaceAll("");
+					r=aggregateTerm2.matcher(r).replaceAll("");
+					r=AGGREGATE_PATTERN.matcher(r).replaceAll("");
+				
+					debugRules.append(r);
 				}
 				
-				debugChoiceRules.append(".\n");
+				debugRules.append(".\n");
 				
 				debugConstantNum ++;
 			} else if (rule.contains("|") || (rule.contains("{") && rule.contains("}"))) {
@@ -158,10 +169,9 @@ public class Preprocessor {
 				preprocessedProgram.append(".");
 				debugAtomRuleMap.put(debugConstantPrefix + debugConstantNum, new Rule(rule.replace("\n", "").trim() + "."));
 				
-				debugChoiceRules.append("0{");
-				debugChoiceRules.append(debugConstantPrefix);
-				debugChoiceRules.append(debugConstantNum);
-				debugChoiceRules.append("}1.\n");
+				debugRules.append(debugConstantPrefix);
+				debugRules.append(debugConstantNum);
+				debugRules.append(".\n");
 				
 				debugConstantNum ++;
 			} else {
@@ -178,7 +188,7 @@ public class Preprocessor {
 		// add choice rule for debug constants
 		if (debugConstantNum > 1) {
 			preprocessedProgram.append("\n");
-			preprocessedProgram.append(debugChoiceRules);
+			preprocessedProgram.append(debugRules);
 		}
 		
 		return preprocessedProgram.toString();
@@ -192,6 +202,8 @@ public class Preprocessor {
 	 * @return A list that contains all variables without any duplicates
 	 */
 	private List<String> getVariables(String ruleBody) {
+		// remove any aggregates from the rule body
+		ruleBody = AGGREGATE_PATTERN.matcher(ruleBody).replaceAll("");
 		List<String> variables = new ArrayList<String>();
 		Matcher variableMatcher = VARIABLE_PATTERN.matcher(ruleBody);
 		

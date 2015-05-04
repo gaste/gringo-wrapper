@@ -1,11 +1,15 @@
 package at.aau.postprocessing;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import at.aau.Rule;
 
@@ -17,143 +21,112 @@ import at.aau.Rule;
  *
  */
 public class Postprocessor {
-	/**
-	 * Remove the fact literal from the grounded program. This method removes
-	 * <ul>
-	 *   <li>the fact literal from the symbol table,</li>
-	 *   <li>the negated fact literal from the symbol table,</li>
-	 *   <li>the constraint <code>:- factLiteral, -factLiteral.</code>, and</li>
-	 *   <li>the disjunctive rule <code>factLiteral | -factLiteral.</code> from
-	 *   the grounded program. It also replaces each rule of the form
-	 *   <code>f :- factLiteral.</code> with the fact <code>f.</code></li>
-	 * </ul>
-	 * 
-	 * @param groundedProgram
-	 *            The grounded program to be postprocessed.
-	 * @param factLiteral
-	 *            The fact literal to be removed.
-	 * @return The postprocessed grounded program.
-	 * @throws PostprocessingException
-	 *             If the fact literal is not found in the symbol table.
-	 */
-	public String removeFactLiteral(String groundedProgram, String factLiteral)
-			throws PostprocessingException {
-		// patterns that match the fact literal in the symbol table
-		Pattern pFL = Pattern.compile("^(\\d+) " + factLiteral + "\n", Pattern.MULTILINE);
-		Pattern pFLNegated = Pattern.compile("^(\\d+) -" + factLiteral + "\n", Pattern.MULTILINE);
-		
-		// matchers for the fact literal and the negated fact literal
-		Matcher mFL = pFL.matcher(groundedProgram);
-		Matcher mFLNegated = pFLNegated.matcher(groundedProgram);
-		
-		// find the fact literal in the symbol table
-		if (!mFL.find()) {
-			throw new PostprocessingException("The fact literal was not found in the symbol table");
-		}
-		
-		// parse the fact literal from the symbol table
-		String factLiteralSymbol = mFL.group(1);
-		
-		// find the negated fact literal in the symbol table
-		if (!mFLNegated.find()) {
-			throw new PostprocessingException("The negated fact literal was not found in the symbol table");
-		}
-		
-		// parse the negated fact literal from the symbol table
-		String factLiteralSymbolNegated = mFLNegated.group(1);
-		
-		// remove the fact literal from the symbol table
-		groundedProgram = pFL.matcher(groundedProgram).replaceAll("");
-		
-		// remove the negated fact literal from the symbol table
-		groundedProgram = pFLNegated.matcher(groundedProgram).replaceAll("");
-		
-		// remove the fact literal constraint ':- factLiteral, -factLiteral' from the set of rules
-		groundedProgram = groundedProgram.replace("1 1 2 0 " + factLiteralSymbol + " " + factLiteralSymbolNegated + "\n", "");
-		
-		// remove the fact literal disjunction rule 'factLiteral | -factLiteral' from the set of rules
-		// try both orders 'factLiteral | -factLiteral' and '-factLiteral | factLiteral'
-		groundedProgram = groundedProgram.replace("8 2 " + factLiteralSymbol + " " + factLiteralSymbolNegated + " 0 0\n", ""); 
-		groundedProgram = groundedProgram.replace("8 2 " + factLiteralSymbolNegated + " " + factLiteralSymbol + " 0 0\n", "");
-		
-		// pattern for matching fact literal rules 'f :- factLiteral'
-		Pattern factLiteralRules = Pattern.compile("^1 (\\d+) 1 0 " + factLiteralSymbol + "$", Pattern.MULTILINE);
-		
-		// replace all fact literal rules with the fact
-		groundedProgram = factLiteralRules.matcher(groundedProgram).replaceAll("1 $1 0 0");
-		
-		return groundedProgram;
-	}
-	
-	/**
-	 * Removes the choice rules of the _debug constants from the grounded
-	 * program.
-	 * 
-	 * @param groundedProgram
-	 *            The program from which the choice rules should be removed.
-	 * @param debugConstantPrefix
-	 *            The prefix of the debug constants.
-	 * @return The postprocessed grounded programm.
-	 */
-	public String removeDebugChoiceRules(String groundedProgram,
-			String debugConstantPrefix) {
-		Matcher debugConstantSymbolMatcher = getDebugConstantSymbolMatcher(groundedProgram, debugConstantPrefix);
-		
-		while(debugConstantSymbolMatcher.find()) {
-			String debugConstantSymbol = debugConstantSymbolMatcher.group(1);
-			Matcher debugChoiceRuleBodyMatcher = Pattern.compile("^3 1 " + debugConstantSymbol + " 1 0 (\\d+)\n", Pattern.MULTILINE).matcher(groundedProgram);
-			
-			if (debugChoiceRuleBodyMatcher.find()) {
-				// found a body for the debug choice rule, so delete it and the rule itself
-				String debugChoiceRuleBodySymbol = debugChoiceRuleBodyMatcher.group(1);
-				groundedProgram = debugChoiceRuleBodyMatcher.replaceAll("");
-				groundedProgram = groundedProgram.replaceAll("(?m)^1 " + debugChoiceRuleBodySymbol + "( \\d+)*\n", "");
-			} else {
-				// no body for the debug choice rule, so delete the choice rule itself only
-				groundedProgram = groundedProgram.replaceAll("(?m)^3 1 " + debugConstantSymbol + " 0 0\n" , "");
-			}
-		}
-		
-		return groundedProgram;
-	}
-
 	private Matcher getDebugConstantSymbolMatcher(String groundedProgram,
 			String debugConstantPrefix) {
 		Matcher debugConstantSymbolMatcher = Pattern.compile("^(\\d+) " + debugConstantPrefix + "[0-9]*(\\([ _,a-zA-Z0-9]*\\))?\n", Pattern.MULTILINE).matcher(groundedProgram);
 		return debugConstantSymbolMatcher;
 	}
 	
-	/**
-	 * Add a single choice rule to the ground program, that includes all
-	 * <code>_debug</code> atoms.
-	 * 
-	 * @param groundedProgram
-	 *            The grounded program to modify
-	 * @param debugConstantPrefix
-	 *            The prefix of the debug constants
-	 * @return The postprocessed grounded program
-	 */
-	public String addDebugChoiceRule(String groundedProgram,
-			String debugConstantPrefix) {
-		List<String> debugConstantSymbols = new ArrayList<String>();
-		Matcher debugConstantSymbolMatcher = getDebugConstantSymbolMatcher(groundedProgram, debugConstantPrefix);
+	public String performPostprocessing(String groundedProgram, String debugAtomPrefix, String factAtom) {
+		String[] splitted = groundedProgram.split("(?m)^0$", 2);
+		BufferedReader rulesReader = new BufferedReader(new StringReader(splitted[0]));
+		BufferedReader symbolsReader = new BufferedReader(new StringReader(splitted[1]));
+		StringBuilder rules = new StringBuilder(splitted[0].length());
+		StringBuilder symbols = new StringBuilder(splitted[1].length());
+		StringBuilder debugChoiceRule = new StringBuilder();
+		String line = null;
+		Set<String> debugSymbols = new HashSet<String>();
+		boolean factAtomFound = false;
+		boolean factAtomNegFound = false;
+		String factAtomSymbol = null;
+		String factAtomNegSymbol = null;
+		int numDebugAtoms = 0;
 		
-		// determine all debug constant symbols
-		while (debugConstantSymbolMatcher.find()) {
-			debugConstantSymbols.add(debugConstantSymbolMatcher.group(1));
-		}
+		int idx = -1;
 		
-		if (debugConstantSymbols.size() > 0) {
-			// build the choice rule
-			String choiceRule = "3 " // rule type: choice rule
-							  + debugConstantSymbols.size() + " " // #heads
-							  + debugConstantSymbols.stream().collect(Collectors.joining(" ")) // heads 
-							  + " 0 0"; // #literals #negative
+		// process the symbols
+		try {
+			while ((line = symbolsReader.readLine()) != null) {
+				if ((idx = line.indexOf(debugAtomPrefix)) > -1) {
+					// n _debug#(...)
+					String debugSymbol = line.substring(0, idx - 1);
+							
+					debugSymbols.add(debugSymbol);
+					
+					debugChoiceRule.append(' ');
+					debugChoiceRule.append(debugSymbol);
+					
+					numDebugAtoms ++;
+				}
+				
+				if ((!factAtomFound || !factAtomNegFound) && (idx = line.indexOf(factAtom)) > -1) {
+					// fact atom symbol entry
+					if(line.charAt(idx - 1) == '-') {
+						// n -_flXXX
+						factAtomNegSymbol = line.substring(0, idx - 2);
+						factAtomNegFound = true;
+					} else {
+						// n _flXXX
+						factAtomSymbol = line.substring(0, idx - 1);
+						factAtomFound = true;
+					}
+				} else {
+					// other entry, append it
+					symbols.append(line);
+					symbols.append('\n');
+				}
+			}
+		
+			// build the debug choice rule
+			if (numDebugAtoms > 0) {
+				debugChoiceRule.insert(0, "3 " + numDebugAtoms);
+				debugChoiceRule.append(" 0 0\n");
+			}
 			
-			groundedProgram = groundedProgram.replaceFirst("(?m)^0$", choiceRule + "\n0");
+			// constraint ':- _fl, -_fl'
+			String factAtomConstraint = "1 1 2 0 " + factAtomSymbol + " " + factAtomNegSymbol;
+			String factAtomDisjunction1 = "8 2 " + factAtomSymbol + " " + factAtomNegSymbol + " 0 0";
+			String factAtomDisjunction2 = "8 2 " + factAtomNegSymbol + " " + factAtomSymbol + " 0 0";
+			String factAtomBody = "1 0 " + factAtomSymbol;
+			
+			boolean factAtomConstraintFound = false;
+			boolean factAtomDisjunctionFound = false;
+			
+			// process the rules
+			while ((line = rulesReader.readLine()) != null) {
+				if (!factAtomConstraintFound && line.equals(factAtomConstraint)) {
+					factAtomConstraintFound = true;
+				} else if (!factAtomDisjunctionFound
+						&& (line.equals(factAtomDisjunction1) || line
+								.equals(factAtomDisjunction2))) {
+					factAtomDisjunctionFound = true;
+				} else if ((idx = line.indexOf(factAtomBody)) > -1) {
+					// 1 fact 1 0 _fl
+					rules.append(line.substring(0, idx));
+					rules.append("0 0\n");
+				} else if (line.charAt(0) == '1') {
+					// normal rule, check if it has a debug symbol in the head
+					idx = line.indexOf(' ', 2);
+					String headSymbol = line.substring(2, idx);
+					if (!debugSymbols.contains(headSymbol)) {
+						rules.append(line);
+						rules.append('\n');
+					}
+				} else {
+					rules.append(line);
+					rules.append('\n');
+				}
+			}
+			
+			// append the debug choice rule
+			rules.append(debugChoiceRule);
+			rules.append('0');
+			rules.append(symbols);
+			
+			return rules.toString();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
-		
-		return groundedProgram;
 	}
 	
 	/**
@@ -167,7 +140,7 @@ public class Postprocessor {
 	 */
 	public List<String> getRemovedRules(String groundedProgram, Map<String, Rule> debugRuleMap) {
 		List<String> removedRules = new ArrayList<String>();
-		String groundedRules = groundedProgram.split("(?m)^0$")[0];
+		String groundedRules = groundedProgram.split("(?m)^0$", 2)[0];
 		
 		for(String debugConstant : debugRuleMap.keySet()) {
 			boolean foundRule = false;
