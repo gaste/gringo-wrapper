@@ -74,11 +74,12 @@ gringo-wrapper -nw program.lp instance.in > grounded.txt
 java -jar ouroboros-translator.jar program.lp | gringo instance.in > grounded.txt
 ```
 
-The results of the benchmark are presented below. Each row contains the identifier of the instance, the number of non-grounded rules (#ng), the number of grounded rules by gringo 4.4 (#g g), gringo-wrapper (#g g-w), and OUROBOROS (#g o) as well as the time required for the grounding (t).
+The results of the benchmark are presented below.
+Each row contains the identifier of the instance, the number of non-grounded rules (#ng), the number of grounded rules by gringo 4.4 (#g g), gringo-wrapper (#g g-w), and OUROBOROS (#g o) as well as the time in seconds required for the grounding (t).
 Furthermore, we report the increase of the size of the grounded program (inc) for the gringo-wrapper and OUROBOROS, compared to gringo.
 
 | Program        | Instance | #ng  |   #g g |    t | #g g-w |     t | inc |      #g o |     t |      inc |
-|----------------|----------|------|-------:|-----:|-------:|------:|----:|----------:|------:|---------:|
+|----------------|----------|-----:|-------:|-----:|-------:|------:|----:|----------:|------:|---------:|
 | Graph Coloring | 1-125    | 1672 |   6145 | 0.22 |   8031 |  0.63 | 1.3 |     19020 |  0.95 |      3.1 |
 | Graph Coloring | 11-130   | 1757 |   6455 | 0.21 |   8416 |  0.68 | 1.3 |     19845 |  1.10 |      3.1 |
 | Graph Coloring | 21-135   | 1986 |   7269 | 0.24 |   9305 |  0.73 | 1.3 |     21174 |  1.04 |      2.9 |
@@ -87,33 +88,33 @@ Furthermore, we report the increase of the size of the grounded program (inc) fo
 | Graph Coloring | 40-140   | 2219 |   8097 | 0.32 |  10208 |  0.68 | 1.3 |     22517 |  1.03 |      2.8 |
 | Graph Coloring | 41-145   | 2262 |   8260 | 0.25 |  10446 |  0.68 | 1.3 |     23195 |  1.04 |      2.8 |
 | Graph Coloring | 51-120   | 2405 |   8773 | 0.36 |  11034 |  0.76 | 1.3 |     24223 |  1.05 |      2.8 |
-| Hanoi          | 09-28    | 104  |  31748 | 0.40 |  94166 |  1.61 | 3.0 |   1739800 |  8.09 |     54.8 |
-| Hanoi          | 11-30    | 106  |  34056 | 0.33 | 100942 |  1.58 | 3.0 |   1864222 |  9.50 |     54.7 |
-| Hanoi          | 15-34    | 110  |  38672 | 0.38 | 114524 |  2.11 | 3.0 |   2112986 |  9.43 |     54.6 |
-| Hanoi          | 16-40    | 100  |  27137 | 0.35 |  80615 |  1.40 | 3.0 |   1491281 |  7.04 |     55.0 |
-| Hanoi          | 22-60    | 102  |  28311 | 0.29 |  84644 |  1.43 | 3.0 |   1678483 |  7.80 |     59.3 |
-| Hanoi          | 38-80    | 106  |  34044 | 0.23 | 100942 |  1.68 | 3.0 |   1864250 |  8.53 |     54.8 |
-| Hanoi          | 41-100   | 104  |  31738 | 0.39 |  94166 |  1.52 | 3.0 |   1739830 | 13.24 |     54.8 |
-| Hanoi          | 47-120   | 99   |  25968 | 0.19 |  77227 |  1.49 | 3.0 |   1429695 |  6.90 |     55.1 |
-| Knights Tour   | 01-8     | 21   |   1384 | 0.34 |   3413 |  1.14 | 2.5 |  12985716 | 59.44 |   9382.7 |
-| Knights Tour   | 03-12    | 22   |   3356 | 0.13 |   8652 |  0.60 | 2.6 | >72244034 |  >300 |  21526.8 |
-| Knights Tour   | 05-16    | 21   |   6192 | 0.16 |  16285 |  0.64 | 2.6 | >69494641 |  >300 | >11223.3 |
-| Knights Tour   | 06-20    | 21   |   9892 | 0.16 |  26321 |  0.88 | 2.7 | >62785993 |  >300 |  >6347.1 |
-| Knights Tour   | 07-30    | 21   |  22922 | 0.40 |  61911 |  1.13 | 2.7 | >59166564 |  >300 |  >2581.2 |
-| Knights Tour   | 08-40    | 21   |  41352 | 0.44 | 112501 |  1.27 | 2.7 | >54944042 |  >300 |  >1328.7 |
-| Knights Tour   | 09-46    | 21   |  55002 | 0.53 | 150055 |  1.58 | 2.7 | >56443633 |  >300 |  >1026.2 |
-| Knights Tour   | 10-50    | 22   |  65182 | 0.86 | 178094 |  2.15 | 2.7 | >62402315 |  >300 |   >957.4 |
-| Partner Units  | 115-100  | 254  | 952369 | 2.86 | 979759 | 16.07 | 1.0 |  20317011 | 94.26 |    >21.3 |
-| Partner Units  | 175-75   | 290  | 682015 | 2.10 | 699472 | 16.03 | 1.0 |   8604415 | 40.60 |     12.6 |
-| Partner Units  | 176-24   | 68   |  12563 | 0.22 |  14218 |  1.03 | 1.1 |    102023 |  1.47 |      8.1 |
-| Partner Units  | 204-67   | 141  | 218808 | 0.78 | 231083 |  5.30 | 1.1 |   4280282 | 17.79 |     19.6 |
-| Partner Units  | 207-58   | 136  | 158564 | 0.61 | 168289 |  3.07 | 1.1 |   2726182 | 11.94 |     17.2 |
-| Partner Units  | 23-30    | 117  |  39231 | 0.29 |  42106 |  1.20 | 1.1 |    276645 |  2.11 |      7.1 |
-| Partner Units  | 29-40    | 108  |  59979 | 0.34 |  64413 |  1.67 | 1.1 |    629639 |  3.35 |     10.5 |
-| Partner Units  | 52-100   | 254  | 952363 | 2.68 | 979603 | 16.61 | 1.0 |  20125857 | 90.10 |     21.1 |
+| Hanoi          | 09-28    |  104 |  31748 | 0.40 |  94166 |  1.61 | 3.0 |   1739800 |  8.09 |     54.8 |
+| Hanoi          | 11-30    |  106 |  34056 | 0.33 | 100942 |  1.58 | 3.0 |   1864222 |  9.50 |     54.7 |
+| Hanoi          | 15-34    |  110 |  38672 | 0.38 | 114524 |  2.11 | 3.0 |   2112986 |  9.43 |     54.6 |
+| Hanoi          | 16-40    |  100 |  27137 | 0.35 |  80615 |  1.40 | 3.0 |   1491281 |  7.04 |     55.0 |
+| Hanoi          | 22-60    |  102 |  28311 | 0.29 |  84644 |  1.43 | 3.0 |   1678483 |  7.80 |     59.3 |
+| Hanoi          | 38-80    |  106 |  34044 | 0.23 | 100942 |  1.68 | 3.0 |   1864250 |  8.53 |     54.8 |
+| Hanoi          | 41-100   |  104 |  31738 | 0.39 |  94166 |  1.52 | 3.0 |   1739830 | 13.24 |     54.8 |
+| Hanoi          | 47-120   |   99 |  25968 | 0.19 |  77227 |  1.49 | 3.0 |   1429695 |  6.90 |     55.1 |
+| Knights Tour   | 01-8     |   21 |   1384 | 0.34 |   3413 |  1.14 | 2.5 |  12985716 | 59.44 |   9382.7 |
+| Knights Tour   | 03-12    |   22 |   3356 | 0.13 |   8652 |  0.60 | 2.6 | >72244034 |  >300 | >21526.8 |
+| Knights Tour   | 05-16    |   21 |   6192 | 0.16 |  16285 |  0.64 | 2.6 | >69494641 |  >300 | >11223.3 |
+| Knights Tour   | 06-20    |   21 |   9892 | 0.16 |  26321 |  0.88 | 2.7 | >62785993 |  >300 |  >6347.1 |
+| Knights Tour   | 07-30    |   21 |  22922 | 0.40 |  61911 |  1.13 | 2.7 | >59166564 |  >300 |  >2581.2 |
+| Knights Tour   | 08-40    |   21 |  41352 | 0.44 | 112501 |  1.27 | 2.7 | >54944042 |  >300 |  >1328.7 |
+| Knights Tour   | 09-46    |   21 |  55002 | 0.53 | 150055 |  1.58 | 2.7 | >56443633 |  >300 |  >1026.2 |
+| Knights Tour   | 10-50    |   22 |  65182 | 0.86 | 178094 |  2.15 | 2.7 | >62402315 |  >300 |   >957.4 |
+| Partner Units  | 176-24   |   68 |  12563 | 0.22 |  14218 |  1.03 | 1.1 |    102023 |  1.47 |      8.1 |
+| Partner Units  | 23-30    |  117 |  39231 | 0.29 |  42106 |  1.20 | 1.1 |    276645 |  2.11 |      7.1 |
+| Partner Units  | 29-40    |  108 |  59979 | 0.34 |  64413 |  1.67 | 1.1 |    629639 |  3.35 |     10.5 |
+| Partner Units  | 207-58   |  136 | 158564 | 0.61 | 168289 |  3.07 | 1.1 |   2726182 | 11.94 |     17.2 |
+| Partner Units  | 204-67   |  141 | 218808 | 0.78 | 231083 |  5.30 | 1.1 |   4280282 | 17.79 |     19.6 |
+| Partner Units  | 175-75   |  290 | 682015 | 2.10 | 699472 | 16.03 | 1.0 |   8604415 | 40.60 |     12.6 |
+| Partner Units  | 52-100   |  254 | 952363 | 2.68 | 979603 | 16.61 | 1.0 |  20125857 | 90.10 |     21.1 |
+| Partner Units  | 115-100  |  254 | 952369 | 2.86 | 979759 | 16.07 | 1.0 |  20317011 | 94.26 |     21.3 |
 
 ----------
 
 ## References
   [1]: Oetsch, J., Pührer, J., Tompits, H.: Catching the Ouroboros: On Debugging Non-ground Answer-Set Programs. TPLP 10(4-6), 2010 (2010) <br/>
-  [2]: Polleres, A., Fr ¨ uhst ¨ uck, M., Schenner, G., Friedrich, G.: Debugging Non-ground ASP Programs with Choice Rules, Cardinality and Weight Constraints. In: LPNMR, pp. 452–464 (2013)
+  [2]: Polleres, A., Frühstück, M., Schenner, G., Friedrich, G.: Debugging Non-ground ASP Programs with Choice Rules, Cardinality and Weight Constraints. In: LPNMR, pp. 452–464 (2013)
