@@ -46,6 +46,8 @@ public class Preprocessor {
 	
 	private static final Pattern COMMENT_PATTERN = Pattern.compile(" *%.*$", Pattern.MULTILINE);
 	
+	private static final Pattern AGGREGATE_PATTERN = Pattern.compile("[^\\{\\},]*\\{[^\\{\\}]*?\\}[^\\{\\},]*");
+		
 	public String removeComments(String logicProgram) {
 		return COMMENT_PATTERN.matcher(logicProgram).replaceAll("");
 	}
@@ -113,6 +115,9 @@ public class Preprocessor {
 		StringBuilder debugRules = new StringBuilder();
 		int debugConstantNum = 1;
 		
+		Pattern aggregateTerm1 = Pattern.compile(AGGREGATE_PATTERN.pattern() + ",");
+		Pattern aggregateTerm2 = Pattern.compile("," + AGGREGATE_PATTERN.pattern() + "(?!,)");
+		
 		// split the program into rules. The regex matches only a single '.'
 		for (String rule : logicProgram.split("(?<!\\.)\\.(?!\\.)")) {
 			if (rule.contains(":-")) {
@@ -144,7 +149,12 @@ public class Preprocessor {
 				
 				if (variables.size() > 0) {
 					debugRules.append(" :- ");
-					debugRules.append(rule.split(":-")[1]);
+					String r = rule.split(":-")[1];
+					r=aggregateTerm1.matcher(r).replaceAll("");
+					r=aggregateTerm2.matcher(r).replaceAll("");
+					r=AGGREGATE_PATTERN.matcher(r).replaceAll("");
+				
+					debugRules.append(r);
 				}
 				
 				debugRules.append(".\n");
@@ -192,6 +202,8 @@ public class Preprocessor {
 	 * @return A list that contains all variables without any duplicates
 	 */
 	private List<String> getVariables(String ruleBody) {
+		// remove any aggregates from the rule body
+		ruleBody = AGGREGATE_PATTERN.matcher(ruleBody).replaceAll("");
 		List<String> variables = new ArrayList<String>();
 		Matcher variableMatcher = VARIABLE_PATTERN.matcher(ruleBody);
 		

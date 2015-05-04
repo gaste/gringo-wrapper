@@ -584,4 +584,49 @@ public class PreprocessorTest {
 		assertEquals(correct, preprocessed);
 		assertThat(debugRuleMap, is(correctDebugRuleMap));
 	}
+	
+	@Test
+	public void addDebugConstants_aggregateRuleNoSpaces_addedCorrect() {
+		String lp =
+				":-{pred(X,Y)},t(X).\n"
+			  + ":-3{pred(X,Y,Z)},t(X).\n"
+			  + ":-1<{pred(X,Y):t(Y)},t(X).\n"
+			  + ":-{pred(X,Y)}1,t(X).\n"
+			  + ":-{pred(X,Y)}<1,t(X).\n"
+			  + ":-{pred(X,Y)}.\n"
+			  + ":-t(X),1<{pred(X,Y)}.";
+		
+		String correct =
+				":-{pred(X,Y)},t(X), _debug1(X).\n"
+			  + ":-3{pred(X,Y,Z)},t(X), _debug2(X).\n"
+			  + ":-1<{pred(X,Y):t(Y)},t(X), _debug3(X).\n"
+			  + ":-{pred(X,Y)}1,t(X), _debug4(X).\n"
+			  + ":-{pred(X,Y)}<1,t(X), _debug5(X).\n"
+			  + ":-{pred(X,Y)}, _debug6.\n"
+			  + ":-t(X),1<{pred(X,Y)}, _debug7(X).\n"
+			  + "_debug1(X) :- t(X).\n"
+			  + "_debug2(X) :- t(X).\n"
+			  + "_debug3(X) :- t(X).\n"
+			  + "_debug4(X) :- t(X).\n"
+			  + "_debug5(X) :- t(X).\n"
+			  + "_debug6.\n"
+			  + "_debug7(X) :- t(X).\n";
+		
+		Map<String, Rule> correctDebugRuleMap = new HashMap<String, Rule>();
+		correctDebugRuleMap.put("_debug1", new Rule(":-{pred(X,Y)},t(X).", Arrays.asList("X")));
+		correctDebugRuleMap.put("_debug2", new Rule(":-3{pred(X,Y,Z)},t(X).", Arrays.asList("X")));
+		correctDebugRuleMap.put("_debug3", new Rule(":-1<{pred(X,Y):t(Y)},t(X).", Arrays.asList("X")));
+		correctDebugRuleMap.put("_debug4", new Rule(":-{pred(X,Y)}1,t(X).", Arrays.asList("X")));
+		correctDebugRuleMap.put("_debug5", new Rule(":-{pred(X,Y)}<1,t(X).", Arrays.asList("X")));
+		correctDebugRuleMap.put("_debug6", new Rule(":-{pred(X,Y)}."));
+		correctDebugRuleMap.put("_debug7", new Rule(":-t(X),1<{pred(X,Y)}.", Arrays.asList("X")));
+		
+		// act
+		Map<String, Rule> debugRuleMap = new HashMap<String, Rule>();
+		String preprocessed = preprocessor.addDebugConstants(lp, "_debug", debugRuleMap);
+		
+		// assert
+		assertEquals(correct, preprocessed);
+		assertThat(debugRuleMap, is(correctDebugRuleMap));
+	}
 }
