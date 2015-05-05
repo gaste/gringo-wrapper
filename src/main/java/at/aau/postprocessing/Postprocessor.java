@@ -100,17 +100,21 @@ public class Postprocessor {
 						&& (line.equals(factAtomDisjunction1) || line
 								.equals(factAtomDisjunction2))) {
 					factAtomDisjunctionFound = true;
-				} else if ((idx = line.indexOf(factAtomBody)) > -1) {
-					// 1 fact 1 0 _fl
-					rules.append(line.substring(0, idx));
-					rules.append("0 0\n");
 				} else if (line.charAt(0) == '1') {
 					// normal rule, check if it has a debug symbol in the head
 					idx = line.indexOf(' ', 2);
 					String headSymbol = line.substring(2, idx);
 					if (!debugSymbols.contains(headSymbol)) {
-						rules.append(line);
-						rules.append('\n');
+						// check if it is of the form '1 fact 1 0 _fl'
+						if ((idx = line.indexOf(factAtomBody)) > -1) {
+							// replace fact :- _fl with fact.
+							rules.append(line.substring(0, idx));
+							rules.append("0 0\n");
+						} else {
+							// regular normal rule
+							rules.append(line);
+							rules.append('\n');
+						}
 					}
 				} else {
 					rules.append(line);

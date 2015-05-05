@@ -223,40 +223,6 @@ public class PostprocessorTest {
 		assertThat(removedRules, IsIterableContainingInAnyOrder.containsInAnyOrder("a:-b.", "b:-c.", "c:-a.", "d:-a."));
 	}
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	// =========================================================================
 	// postprocessAll tests
 	// =========================================================================
@@ -990,6 +956,89 @@ public class PostprocessorTest {
 			  + "1\n";
 		
 		String postprocessed = postprocessor.performPostprocessing(groundedProgram, "_debug", factLiteral);
+		
+		assertEquals(expected, postprocessed);
+	}
+	
+	@Test
+	public void postprocessAll_normalRulesVariables_integrationTest() {
+		// a :- _fl.
+		// b :- a, _debug1.
+		// n(1..3) :- _fl.
+		// pred(X) :- n(X), _debug2(X).
+		// _debug1 :- _fl.
+		// _debug2(X) :- n(X).
+		// _fl | -_fl.
+		String groundedProgram = 
+				"1 2 1 0 3\n"
+			  + "1 4 1 0 3\n"
+			  + "1 5 2 0 2 4\n"
+			  + "1 6 1 0 3\n"
+			  + "1 7 1 0 3\n"
+			  + "1 8 1 0 3\n"
+			  + "1 9 1 0 6\n"
+			  + "1 10 1 0 7\n"
+			  + "1 11 1 0 8\n"
+			  + "1 12 2 0 6 9\n"
+			  + "1 13 2 0 7 10\n"
+			  + "1 14 2 0 8 11\n"
+			  + "1 1 2 0 3 15\n"
+			  + "8 2 3 15 0 0\n"
+			  + "0\n"
+			  + "3 _fl\n"
+			  + "2 a\n"
+			  + "4 _debug1\n"
+			  + "5 b\n"
+			  + "6 n(1)\n"
+			  + "7 n(2)\n"
+			  + "8 n(3)\n"
+			  + "9 _debug2(1)\n"
+			  + "10 _debug2(2)\n"
+			  + "11 _debug2(3)\n"
+			  + "12 pred(1)\n"
+			  + "13 pred(2)\n"
+			  + "14 pred(3)\n"
+			  + "15 -_fl\n"
+			  + "0\n"
+			  + "B+\n"
+			  + "0\n"
+			  + "B-\n"
+			  + "1\n"
+			  + "0\n"
+			  + "1";
+		
+		String expected = 
+				"1 2 0 0\n"
+			  + "1 5 2 0 2 4\n"
+			  + "1 6 0 0\n"
+			  + "1 7 0 0\n"
+			  + "1 8 0 0\n"
+			  + "1 12 2 0 6 9\n"
+			  + "1 13 2 0 7 10\n"
+			  + "1 14 2 0 8 11\n"
+			  + "3 4 4 9 10 11 0 0\n"
+			  + "0\n"
+			  + "2 a\n"
+			  + "4 _debug1\n"
+			  + "5 b\n"
+			  + "6 n(1)\n"
+			  + "7 n(2)\n"
+			  + "8 n(3)\n"
+			  + "9 _debug2(1)\n"
+			  + "10 _debug2(2)\n"
+			  + "11 _debug2(3)\n"
+			  + "12 pred(1)\n"
+			  + "13 pred(2)\n"
+			  + "14 pred(3)\n"
+			  + "0\n"
+			  + "B+\n"
+			  + "0\n"
+			  + "B-\n"
+			  + "1\n"
+			  + "0\n"
+			  + "1\n";
+		
+		String postprocessed = postprocessor.performPostprocessing(groundedProgram, "_debug", "_fl");
 		
 		assertEquals(expected, postprocessed);
 	}
