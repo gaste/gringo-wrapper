@@ -66,6 +66,7 @@ public class GringoWrapper {
 		
 		String factLiteral = preprocessor.getFactLiteral(logicProgram);
 		logicProgram = preprocessor.removeComments(logicProgram);
+		logicProgram = preprocessor.rewriteAssertions(logicProgram);
 		
 		if (addDebugConstants) {
 			logicProgram = preprocessor.addDebugConstants(logicProgram, DEBUG_CONSTANT_PREFIX, debugRuleMap);			
