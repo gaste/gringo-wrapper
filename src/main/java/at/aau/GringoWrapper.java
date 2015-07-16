@@ -47,7 +47,7 @@ public class GringoWrapper {
 		this.rewriteOnly = rewriteOnly;
 		this.warnRulesRemoved = warnRulesRemoved;
 	}
-
+	
 	/**
 	 * Ground the given logic program without performing any optimizations.
 	 * 
@@ -62,8 +62,23 @@ public class GringoWrapper {
 	 */
 	public String ground(String logicProgram, boolean addDebugConstants)
 			throws GroundingException, PostprocessingException {
-		Map<String, Rule> debugRuleMap = new HashMap<String, Rule>();
-		
+		return ground(logicProgram, addDebugConstants, new HashMap<String, Rule>());
+	}
+
+	/**
+	 * Ground the given logic program without performing any optimizations.
+	 * 
+	 * @param logicProgram
+	 *            The logic program to ground.
+	 * @return The grounded logic program.
+	 * @throws GroundingException
+	 *             If the grounder was not found or the program could not be
+	 *             grounded.
+	 * @throws PostprocessingException
+	 *             If the postprocessing of the grounded program failed.
+	 */
+	public String ground(String logicProgram, boolean addDebugConstants, Map<String, Rule> debugRuleMap)
+			throws GroundingException, PostprocessingException {
 		String factLiteral = preprocessor.getFactLiteral(logicProgram);
 		logicProgram = preprocessor.removeComments(logicProgram);
 		logicProgram = preprocessor.rewriteAssertions(logicProgram);
