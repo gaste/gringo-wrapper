@@ -10,6 +10,7 @@ Furthermore, (unless the ``--no-debug`` option is present) the gringo-wrapper ad
 
 <p align="center">
 <a href="https://github.com/gaste/gringo-wrapper/releases/latest"><img src="https://img.shields.io/github/release/gaste/gringo-wrapper.svg" alt="Latest Version"></img></a>
+<a href="https://travis-ci.org/gaste/gringo-wrapper"><img src="https://img.shields.io/travis/gaste/gringo-wrapper.svg" alt="Build Status"></img></a>
 </p>
 
 ## Table of contents

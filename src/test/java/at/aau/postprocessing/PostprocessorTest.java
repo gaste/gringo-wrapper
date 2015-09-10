@@ -1,5 +1,7 @@
 package at.aau.postprocessing;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -287,6 +289,76 @@ public class PostprocessorTest {
 		assertFalse("Rule 'b :- _fl.' was not removed", postprocessed.contains("1 4 1 0 3"));
 		assertTrue("Fact 'a.' was not introduced", postprocessed.contains("1 2 0 0"));
 		assertTrue("Fact 'b.' was not introduced", postprocessed.contains("1 4 0 0"));
+	}
+	
+	/**
+	 * Tests whether the postprocessor replaces facts correctly. Consider _fl
+	 * with symbol value 3 and the rule '1 1 1 0 30'.
+	 * 
+	 * In this case, the rule should not be replaced with 1 1 0 0 (which is
+	 * 'false'), but could happend due to the fact that the encoding of
+	 * 'atom :- _fl.' is equal to '1 0 3' in this case.
+	 * @throws PostprocessingException
+	 */
+	@Test
+	public void postprocessAll_removeFactLiteral_factLiteralBodyContained_replacesCorrectly() throws PostprocessingException {
+		// a :- _fl.
+		// b :- a, _debug1.
+		// :- b, _debug2.
+		//
+		// _debug1 :- _fl.
+		// _debug2 :- _fl.
+		// :- _debug2.
+		//
+		// _fl | -_fl.
+		String groundedProgram = 
+				"1 2 1 0 3\n"
+			  + "1 4 1 0 3\n"
+			  + "1 5 2 0 4 2\n"
+			  + "1 30 1 0 3\n"
+			  + "1 1 2 0 30 5\n"
+			  + "1 1 1 0 30\n"
+			  + "1 1 2 0 3 7\n"
+			  + "8 2 7 3 0 0\n"
+			  + "0\n"
+			  + "3 _fl\n"
+			  + "2 a\n"
+			  + "4 _debug1\n"
+			  + "5 b\n"
+			  + "30 _debug2\n"
+			  + "7 -_fl\n"
+			  + "0\n"
+			  + "B+\n"
+			  + "0\n"
+			  + "B-\n"
+			  + "1\n"
+			  + "0\n"
+			  + "1\n";
+		
+		String expected = 
+				"1 2 0 0\n"
+			  + "1 5 2 0 4 2\n"
+			  + "1 1 2 0 30 5\n"
+			  + "1 1 1 0 30\n"
+			  + "3 2 4 30 0 0\n"
+			  + "0\n"
+			  + "2 a\n"
+			  + "4 _debug1\n"
+			  + "5 b\n"
+			  + "30 _debug2\n"
+			  + "0\n"
+			  + "B+\n"
+			  + "0\n"
+			  + "B-\n"
+			  + "1\n"
+			  + "0\n"
+			  + "1\n";
+		
+		// act
+		String postprocessed = postprocessor.performPostprocessing(groundedProgram, "_debug", "_fl");
+		
+		assertThat(postprocessed, not(containsString("1 1 0 0")));
+		assertEquals(expected, postprocessed);
 	}
 	
 	/**
@@ -713,7 +785,7 @@ public class PostprocessorTest {
 		// a(X) | b(X) :- pred(X), _debug1(X).
 		// c(X) | d(X) :- a(X), b(Y), trans(X,Y), _debug2(X,Y).
 		// _debug1(X):-pred(X).
-		// _debug2(X,Y):-a(X),b(Y),trans(X,Y).
+		// _debug2(X,Y):-a(X),b(Y),trans(X,Y). 
 		String groundedProgram = 
 				"1 2 0 0\n"
 			  + "1 4 0 0\n"

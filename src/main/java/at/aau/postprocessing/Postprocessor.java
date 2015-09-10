@@ -106,7 +106,7 @@ public class Postprocessor {
 					String headSymbol = line.substring(2, idx);
 					if (!debugSymbols.contains(headSymbol)) {
 						// check if it is of the form '1 fact 1 0 _fl'
-						if ((idx = line.indexOf(factAtomBody)) > -1) {
+						if ((idx = line.indexOf(factAtomBody)) > -1 && line.endsWith(factAtomBody)) {
 							// replace fact :- _fl with fact.
 							rules.append(line.substring(0, idx));
 							rules.append("0 0\n");
