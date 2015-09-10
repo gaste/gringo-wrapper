@@ -38,7 +38,9 @@ public class GrounderGringoImpl implements Grounder {
 		Process grounderProcess;
 		List<String> grounderCommand = new ArrayList<String>();
 		grounderCommand.add(GROUNDER_COMMAND_NAME);
-		grounderCommand.addAll(Arrays.asList(GROUNDER_OPTIONS));
+		
+		if (GROUNDER_OPTIONS.length > 1 && !GROUNDER_OPTIONS[0].isEmpty())
+			grounderCommand.addAll(Arrays.asList(GROUNDER_OPTIONS));
 		
 		try {
 			ProcessBuilder builder = new ProcessBuilder(grounderCommand);
