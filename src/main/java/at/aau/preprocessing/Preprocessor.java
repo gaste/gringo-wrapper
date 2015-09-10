@@ -31,6 +31,22 @@ public class Preprocessor {
 			// positive lookbehind for a single '.' that delimits the fact
 			+ "(?=((?<!\\.)\\.(?!\\.)))";
 	
+	private static final String ASSERT_TRUE_REGEX
+			= "((?<=((?<!\\.)\\.(?!\\.)))|^)" // single '.' or new line
+			+ " *assertTrue" // ' ', then 'assertTrue'
+			+ " *\\(" // ' ' followed by a '('
+			+ "(?<ASSERTION>[ a-zA-Z0-9(),_\\-]*)" // content of the assertion
+			+ "\\) *" // closing ')', then ' '
+			+ "(?=((?<!\\.)\\.(?!\\.)))"; // single '.' that delimits the assertion
+	
+	private static final String ASSERT_FALSE_REGEX
+			= "((?<=((?<!\\.)\\.(?!\\.)))|^)" // single '.' or new line
+			+ " *assertFalse" // ' ', then 'assertFalse'
+			+ " *\\(" // ' ' followed by a '('
+			+ "(?<ASSERTION>[ a-zA-Z0-9(),_\\-]*)" // content of the assertion
+			+ "\\) *" // closing ')', then ' '
+			+ "(?=((?<!\\.)\\.(?!\\.)))"; // single '.' that delimits the assertion
+	
 	/** Group that matches the fact */
 	private static final String FACT_REGEX_MATCHING_GROUP = "$3";
 	
@@ -40,6 +56,10 @@ public class Preprocessor {
 			+ "(_*[A-Z][A-Za-z0-9]*)" // variable
 			+ "(?=[),; ])"; // positive lookahead for a ending delimiter of the variable
 	
+	private static final Pattern ASSERT_TRUE_PATTERN = Pattern.compile(ASSERT_TRUE_REGEX, Pattern.MULTILINE);
+	
+	private static final Pattern ASSERT_FALSE_PATTERN = Pattern.compile(ASSERT_FALSE_REGEX, Pattern.MULTILINE);
+
 	private static final Pattern FACT_PATTERN = Pattern.compile(FACT_REGEX, Pattern.MULTILINE);
 	
 	private static final Pattern VARIABLE_PATTERN = Pattern.compile(VARIABLE_REGEX);
@@ -50,6 +70,24 @@ public class Preprocessor {
 		
 	public String removeComments(String logicProgram) {
 		return COMMENT_PATTERN.matcher(logicProgram).replaceAll("");
+	}
+	
+	/**
+	 * Takes the given logic program and converts assertions:
+	 * <ul>
+	 * <li><code>assertTrue(a).</code> to <code>:- not a.</code></li>
+	 * <li><code>assertFalse(a).</code> to <code>:- a.</code></li>
+	 * </ul>
+	 * 
+	 * @param logicProgram
+	 *            The logic program to rewrite.
+	 * @return The rewritten logic program.
+	 */
+	public String rewriteAssertions(String logicProgram) {
+		logicProgram = ASSERT_TRUE_PATTERN.matcher(logicProgram).replaceAll(":- not ${ASSERTION}");
+		logicProgram = ASSERT_FALSE_PATTERN.matcher(logicProgram).replaceAll(":- ${ASSERTION}");
+				
+		return logicProgram;
 	}
 
 	/**

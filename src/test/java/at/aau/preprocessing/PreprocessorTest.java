@@ -32,6 +32,59 @@ public class PreprocessorTest {
 	}
 
 	// =========================================================================
+	// rewriteAssertions tests
+	// ========================================================================
+	@Test
+	public void rewriteAssertions_noAssertions_returnsSame() {
+		String logicProgram =
+				"a. b(1).\n"
+			  + "c :- a.\n"
+			  + "d(X) :- b(1).\n";
+		
+		String preprocessed = preprocessor.rewriteAssertions(logicProgram);
+
+		assertEquals(logicProgram, preprocessed);
+	}
+	
+	@Test
+	public void rewriteAssertions_assertTrue_returnsRewritten() {
+		String logicProgram =
+				"assertTrue(a).\n"
+			  + "assertTrue(pred(a)).\n"
+			  + "assertTrue ( b ).assertTrue(c).\n"
+			  + " assertTrue  (   pred2 (a, b) )  .\n";
+		
+		String expected =
+				":- not a.\n"
+			  + ":- not pred(a).\n"
+			  + ":- not  b .:- not c.\n"
+			  + ":- not    pred2 (a, b) .\n";
+		
+		String preprocessed = preprocessor.rewriteAssertions(logicProgram);
+
+		assertEquals(expected, preprocessed);
+	}
+	
+	@Test
+	public void rewriteAssertions_assertFalse_returnsRewritten() {
+		String logicProgram =
+				"assertFalse(a).\n"
+			  + "assertFalse(pred(a)).\n"
+			  + "assertFalse ( b ).assertFalse(c).\n"
+			  + " assertFalse  (   pred2 (a, b) )  .\n";
+		
+		String expected =
+				":- a.\n"
+			  + ":- pred(a).\n"
+			  + ":-  b .:- c.\n"
+			  + ":-    pred2 (a, b) .\n";
+		
+		String preprocessed = preprocessor.rewriteAssertions(logicProgram);
+
+		assertEquals(expected, preprocessed);
+	}
+
+	// =========================================================================
 	// removeComments tests
 	// =========================================================================
 	@Test
@@ -39,7 +92,7 @@ public class PreprocessorTest {
 		String logicProgram = 
 				"a. b(1).\n"
 			  + "c :- a.\n"
-			  + "d(X) :- b(1)\n";
+			  + "d(X) :- b(1).\n";
 		
 		String preprocessed = preprocessor.removeComments(logicProgram);
 		
