@@ -27,13 +27,14 @@ public class Postprocessor {
 		return debugConstantSymbolMatcher;
 	}
 	
-	public String performPostprocessing(String groundedProgram, String debugAtomPrefix, String factAtom) {
+	public String performPostprocessing(String groundedProgram, String debugAtomPrefix, String factAtom, List<String> fixedModel) {
 		String[] splitted = groundedProgram.split("(?m)^0$", 2);
 		BufferedReader rulesReader = new BufferedReader(new StringReader(splitted[0]));
 		BufferedReader symbolsReader = new BufferedReader(new StringReader(splitted[1]));
 		StringBuilder rules = new StringBuilder(splitted[0].length());
 		StringBuilder symbols = new StringBuilder(splitted[1].length());
 		StringBuilder debugChoiceRule = new StringBuilder();
+		FixedModelConstraintBuilder fixedModelConstraint = new FixedModelConstraintBuilder();
 		String line = null;
 		Set<String> debugSymbols = new HashSet<String>();
 		boolean factAtomFound = false;
@@ -74,6 +75,23 @@ public class Postprocessor {
 					// other entry, append it
 					symbols.append(line);
 					symbols.append('\n');
+					
+					if (null != fixedModel) {
+						// add to the fixed model constraint
+						int separatorIdx = line.indexOf(' ');
+						
+						if (-1 != separatorIdx) {
+							String symbol = line.substring(0, separatorIdx);
+							String atom = line.substring(separatorIdx + 1);
+							
+							if (!atom.startsWith(debugAtomPrefix) && !atom.startsWith("fixModel")) {
+								if (fixedModel.contains(atom))
+									fixedModelConstraint.addAtomInModel(symbol);
+								else
+									fixedModelConstraint.addAtomNotInModel(symbol);
+							}
+						}
+					}
 				}
 			}
 		
@@ -124,6 +142,14 @@ public class Postprocessor {
 			
 			// append the debug choice rule
 			rules.append(debugChoiceRule);
+			
+			// append the fix model constraint (if present)
+			if (null != fixedModel) {
+				rules.append(fixedModelConstraint.toString());
+				rules.append('\n');
+			}
+			
+			// append the end-of-rules-block marker and the symbols table
 			rules.append('0');
 			rules.append(symbols);
 			
@@ -165,5 +191,60 @@ public class Postprocessor {
 		}
 		
 		return removedRules;
+	}
+	
+	class FixedModelConstraintBuilder {
+		private int numPositive;
+		private int numNegative;
+		private final StringBuilder positiveAtoms;
+		private final StringBuilder negativeAtoms;
+		
+		public FixedModelConstraintBuilder() {
+			positiveAtoms = new StringBuilder();
+			negativeAtoms = new StringBuilder();
+			numPositive = 0;
+			numNegative = 0;
+		}
+		
+		public void addAtomInModel(String symbol) {
+			// in model, thus use 'not symbol' in the constraint
+			if (numNegative > 0) {
+				negativeAtoms.append(' ');
+			}
+			
+			numNegative ++;
+			negativeAtoms.append(symbol);
+		}
+		
+		public void addAtomNotInModel(String symbol) {
+			// not in model, thuse use 'symbol' in the constraint
+			if (numPositive > 0) {
+				positiveAtoms.append(' ');
+			}
+			
+			numPositive ++;
+			positiveAtoms.append(symbol);
+		}
+		
+		@Override
+		public String toString() {
+			StringBuilder constraint = new StringBuilder();
+			constraint.append("1 1 ");
+			constraint.append(numNegative + numPositive);
+			constraint.append(' ');
+			constraint.append(numNegative);
+			
+			if (numNegative > 0) {
+				constraint.append(' ');
+				constraint.append(negativeAtoms);
+			}
+			
+			if (numPositive > 0) {
+				constraint.append(' ');
+				constraint.append(positiveAtoms);
+			}
+			
+			return constraint.toString();
+		}
 	}
 }

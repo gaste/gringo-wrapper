@@ -30,6 +30,14 @@ public class Preprocessor {
 			+ "(([ a-zA-Z0-9(),_\\-]|(\\.\\.))*)"
 			// positive lookbehind for a single '.' that delimits the fact
 			+ "(?=((?<!\\.)\\.(?!\\.)))";
+
+	private static final String FIX_MODEL_REGEX
+			= "((?<=((?<!\\.)\\.(?!\\.)))|^)" // single '.' or new line
+			+ " *fixModel" // ' ', then 'fixModel'
+			+ " *\\(" // ' ' followed by a '('
+			+ "(?<MODEL>[ a-zA-Z0-9(),_\\-]*)" // content of the model
+			+ "\\) *" // closing ')', then ' '
+			+ "(?=((?<!\\.)\\.(?!\\.)))"; // single '.' that delimits the fixModel
 	
 	private static final String ASSERT_TRUE_REGEX
 			= "((?<=((?<!\\.)\\.(?!\\.)))|^)" // single '.' or new line
@@ -55,6 +63,8 @@ public class Preprocessor {
 			= "(?<=[(,; ])" // positive lookbehind for a starting delimiter of the variable
 			+ "(_*[A-Z][A-Za-z0-9]*)" // variable
 			+ "(?=[),; ])"; // positive lookahead for a ending delimiter of the variable
+	
+	private static final Pattern FIX_MODEL_PATTERN = Pattern.compile(FIX_MODEL_REGEX, Pattern.MULTILINE);
 	
 	private static final Pattern ASSERT_TRUE_PATTERN = Pattern.compile(ASSERT_TRUE_REGEX, Pattern.MULTILINE);
 	
@@ -88,6 +98,48 @@ public class Preprocessor {
 		logicProgram = ASSERT_FALSE_PATTERN.matcher(logicProgram).replaceAll(":- ${ASSERTION}");
 				
 		return logicProgram;
+	}
+	
+	/**
+	 * Takes the logic program and searches for a 'fixModel' command.
+	 * @param logicProgram The logic program.
+	 * @return A list of atoms inside the fixModel command or <code>null</code>,
+	 *         if no fixModel command was found.
+	 */
+	//TODO implement functionality for multi-line comments detection
+	public List<String> getFixedModel(String logicProgram) {
+		Matcher matcher = FIX_MODEL_PATTERN.matcher(logicProgram);
+		
+		if (!matcher.find())
+			return null;
+		
+		String modelTerm = matcher.group("MODEL");
+
+		// parse the atoms inside the modelTerm
+		List<String> model = new ArrayList<String>();
+		StringBuilder atomBuilder = new StringBuilder();
+		int openParens = 0;
+		
+		for (char c : modelTerm.toCharArray()) {
+			if ('(' == c) {
+				openParens ++;
+				atomBuilder.append('(');
+			} else if (')' == c) {
+				openParens --;
+				atomBuilder.append(')');
+			} else if (',' == c && openParens == 0) {
+				model.add(atomBuilder.toString());
+				atomBuilder.setLength(0);
+			} else {
+				atomBuilder.append(c);
+			}
+		}
+		
+		if (atomBuilder.length() > 0) {
+			model.add(atomBuilder.toString());
+		}
+		
+		return model;
 	}
 
 	/**

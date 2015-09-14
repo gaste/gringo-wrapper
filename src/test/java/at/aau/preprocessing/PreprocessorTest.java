@@ -3,14 +3,17 @@ package at.aau.preprocessing;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import at.aau.Rule;
@@ -30,10 +33,78 @@ public class PreprocessorTest {
 		// create a new instance of the class under test
 		preprocessor = new Preprocessor();
 	}
+	
+	// =========================================================================
+	// getFixedModel tests
+	// =========================================================================
+	@Test
+	public void getFixedModel_noFixModelCommand_returnsNull() {
+		String logicProgram =
+				"a.\n"
+			  + "b :- a.\n"
+			  + "assertTrue(b).";
+		
+		List<String> fixedModel = preprocessor.getFixedModel(logicProgram);
+		
+		assertNull(fixedModel);
+	}
+	
+	@Test
+	public void getFixedModel_fixModelCommandCommentedOut_returnsNull() {
+		String logicProgram =
+				"a.\n"
+			  + "b :- a.\n"
+			  + "%fixModel(a,b).";
+		
+		List<String> fixedModel = preprocessor.getFixedModel(logicProgram);
+		
+		assertNull(fixedModel);
+	}
+	
+	@Test
+	@Ignore(value="Functionality for detecting multi-line comments not yet implemented")
+	public void getFixedModel_fixModelCommandCommentedOutMultiline_returnsNull() {
+		String logicProgram =
+				"a.\n"
+			  + "b :- a.\n"
+			  + "%*\n"
+			  + "fixModel(a,b).\n"
+			  + "*%\n"
+			  + "assertTrue(a).";
+		
+		List<String> fixedModel = preprocessor.getFixedModel(logicProgram);
+		
+		assertNull(fixedModel);
+	}
+	
+	@Test
+	public void getFixedModel_constantsOnly_returnsCorrect() {
+		String logicProgram = 
+				"a.\n"
+			  + "b :- a.\n"
+			  + "fixModel(a,b).";
+		
+		List<String> fixedModel = preprocessor.getFixedModel(logicProgram);
+		
+		assertEquals(Arrays.asList("a", "b"), fixedModel);
+	}
+	
+	@Test
+	public void getFixedModel_predicates_returnsCorrect() {
+		String logicProgram =
+				"a(1..2).\n"
+			  + "b(X,Y) :- a(X), a(Y), not c(X,Y).\n"
+			  + "c(X,Y) :- a(X), a(Y), not b(X,Y).\n"
+			  + "fixModel(a(1),a(2),b(1,1),b(2,1),b(1,2),b(2,2)).";
+		
+		List<String> fixedModel = preprocessor.getFixedModel(logicProgram);
+		
+		assertEquals(Arrays.asList("a(1)","a(2)","b(1,1)","b(2,1)","b(1,2)","b(2,2)"), fixedModel);
+	}
 
 	// =========================================================================
 	// rewriteAssertions tests
-	// ========================================================================
+	// =========================================================================
 	@Test
 	public void rewriteAssertions_noAssertions_returnsSame() {
 		String logicProgram =
