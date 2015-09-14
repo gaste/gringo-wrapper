@@ -234,7 +234,7 @@ public class PostprocessorTest {
 	@Test
 	public void postprocessAll_removeFactLiteral_removesFromSymbolTable () throws PostprocessingException {
 		// act
-		String postprocessed = postprocessor.performPostprocessing(groundedTestCase, "_debug", factLiteral);
+		String postprocessed = postprocessor.performPostprocessing(groundedTestCase, "_debug", factLiteral, null);
 		
 		// assert
 		assertFalse("Factliteral was not removed from symbol table", postprocessed.contains(factLiteral));
@@ -246,7 +246,7 @@ public class PostprocessorTest {
 	@Test
 	public void postprocessAll_removeFactLiteral_removedDisjunctiveRule() throws PostprocessingException {
 		// act
-		String postprocessed = postprocessor.performPostprocessing(groundedTestCase, "_debug", factLiteral);
+		String postprocessed = postprocessor.performPostprocessing(groundedTestCase, "_debug", factLiteral, null);
 		
 		// assert
 		assertFalse("Disjunctive rule was not removed", postprocessed.contains("8 2 3 7 0 0"));
@@ -258,7 +258,7 @@ public class PostprocessorTest {
 	@Test
 	public void postprocessAll_removeFactLiteral_removedOtherOrderDisjunctiveRule() throws PostprocessingException {
 		// act
-		String postprocessed = postprocessor.performPostprocessing(groundedTestCaseSwitchedDisjunctiveRule, "_debug", factLiteral);
+		String postprocessed = postprocessor.performPostprocessing(groundedTestCaseSwitchedDisjunctiveRule, "_debug", factLiteral, null);
 		
 		// assert
 		assertFalse("Disjunctive rule was not removed", postprocessed.contains("8 2 7 3 0 0"));
@@ -270,7 +270,7 @@ public class PostprocessorTest {
 	@Test
 	public void postprocessAll_removeFactLiteral_removedFactLiteralConstraint() throws PostprocessingException {
 		// act
-		String postprocessed = postprocessor.performPostprocessing(groundedTestCase, "_debug", factLiteral);
+		String postprocessed = postprocessor.performPostprocessing(groundedTestCase, "_debug", factLiteral, null);
 		
 		// assert
 		assertFalse("Fact literal constraint was not removed", postprocessed.contains("1 1 2 0 3 7"));
@@ -282,7 +282,7 @@ public class PostprocessorTest {
 	@Test
 	public void postprocessAll_removeFactLiteral_rewrittenFacts() throws PostprocessingException {
 		// act
-		String postprocessed = postprocessor.performPostprocessing(groundedTestCase, "_debug", factLiteral);
+		String postprocessed = postprocessor.performPostprocessing(groundedTestCase, "_debug", factLiteral, null);
 		
 		// assert
 		assertFalse("Rule 'a :- _fl.' was not removed", postprocessed.contains("1 2 1 0 3"));
@@ -355,7 +355,7 @@ public class PostprocessorTest {
 			  + "1\n";
 		
 		// act
-		String postprocessed = postprocessor.performPostprocessing(groundedProgram, "_debug", "_fl");
+		String postprocessed = postprocessor.performPostprocessing(groundedProgram, "_debug", "_fl", null);
 		
 		assertThat(postprocessed, not(containsString("1 1 0 0")));
 		assertEquals(expected, postprocessed);
@@ -367,7 +367,7 @@ public class PostprocessorTest {
 	@Test
 	public void postprocessAll_removeFactLiteral_integrationTest() throws PostprocessingException {
 		// act
-		String postprocessed = postprocessor.performPostprocessing(groundedTestCase, "_debug", factLiteral);
+		String postprocessed = postprocessor.performPostprocessing(groundedTestCase, "_debug", factLiteral, null);
 		
 		String expected = 
 				"1 2 0 0\n"
@@ -419,7 +419,7 @@ public class PostprocessorTest {
 			  + "0\n"
 			  + "1";
 		// act
-		String postprocessed = postprocessor.performPostprocessing(groundedProgram, "_debug", factLiteral);
+		String postprocessed = postprocessor.performPostprocessing(groundedProgram, "_debug", factLiteral, null);
 		
 		// assert
 		assertEquals(groundedProgram + "\n", postprocessed);
@@ -463,7 +463,7 @@ public class PostprocessorTest {
 			  + "1\n";
 		
 		// act
-		String postprocessed = postprocessor.performPostprocessing(groundedProgram, "_debug", factLiteral);
+		String postprocessed = postprocessor.performPostprocessing(groundedProgram, "_debug", factLiteral, null);
 		
 		// assert
 		assertEquals(expected, postprocessed);
@@ -594,7 +594,7 @@ public class PostprocessorTest {
 			  + "1\n";
 		
 		// act
-		String postprocessed = postprocessor.performPostprocessing(groundedProgram, "_debug", factLiteral);
+		String postprocessed = postprocessor.performPostprocessing(groundedProgram, "_debug", factLiteral, null);
 		
 		// assert
 		assertEquals(expected, postprocessed);
@@ -635,7 +635,7 @@ public class PostprocessorTest {
 			  + "1\n";
 		
 		// act
-		String postprocessed = postprocessor.performPostprocessing(groundedProgram, "_debug", factLiteral);
+		String postprocessed = postprocessor.performPostprocessing(groundedProgram, "_debug", factLiteral, null);
 		
 		// assert
 		assertEquals(expected, postprocessed);
@@ -732,7 +732,7 @@ public class PostprocessorTest {
 			  + "1\n";
 		
 		// act
-		String postprocessed = postprocessor.performPostprocessing(groundedProgram, "_debug", factLiteral);
+		String postprocessed = postprocessor.performPostprocessing(groundedProgram, "_debug", factLiteral, null);
 		
 		// assert
 		assertEquals(expected, postprocessed);
@@ -773,7 +773,7 @@ public class PostprocessorTest {
 			  + "1\n";
 		
 		// act
-		String postprocessed = postprocessor.performPostprocessing(groundedProgram, "_debug", factLiteral);
+		String postprocessed = postprocessor.performPostprocessing(groundedProgram, "_debug", factLiteral, null);
 		
 		// assert
 		assertEquals(expected, postprocessed);
@@ -847,7 +847,7 @@ public class PostprocessorTest {
 			  + "1\n";
 		
 		// act
-		String postprocessed = postprocessor.performPostprocessing(groundedProgram, "_debug", factLiteral);
+		String postprocessed = postprocessor.performPostprocessing(groundedProgram, "_debug", factLiteral, null);
 		
 		// assert
 		assertEquals(expected, postprocessed);
@@ -882,7 +882,7 @@ public class PostprocessorTest {
 			  + "0\n"
 			  + "1\n";
 		
-		String postprocessed = postprocessor.performPostprocessing(groundedProgram, "_debug", factLiteral);
+		String postprocessed = postprocessor.performPostprocessing(groundedProgram, "_debug", factLiteral, null);
 		
 		assertEquals(groundedProgram, postprocessed);
 	}
@@ -947,9 +947,75 @@ public class PostprocessorTest {
 			  + "0\n"
 			  + "1\n";
 		
-		String postprocessed = postprocessor.performPostprocessing(groundedProgram, "_debug", factLiteral);
+		String postprocessed = postprocessor.performPostprocessing(groundedProgram, "_debug", factLiteral, null);
 		
 		assertEquals(expected, postprocessed);
+	}
+	
+	@Test
+	public void postprocessAll_addFixedModel_returnsCorrect() {
+		// a(1) :- _fl.
+		// a(2) :- _fl.
+		// b(X,Y) :- a(X), a(Y), not c(X,Y), _debug1(X, Y).
+		// c(X,Y) :- a(X), a(Y), not b(X,Y), _debug2(X, Y).
+		// _debug1(X, Y) :-  a(X), a(Y), not c(X,Y).
+		// _debug2(X, Y) :-  a(X), a(Y), not b(X,Y).
+		// _fl | -_fl.
+		String groundedProgram =
+				"1 2 1 0 3\n" 
+			  + "1 4 1 0 3\n" 
+			  + "1 5 3 1 6 2 2\n" 
+			  + "1 7 3 1 8 2 4\n" 
+			  + "1 9 3 1 10 4 2\n" 
+			  + "1 11 3 1 12 4 4\n" 
+			  + "1 13 4 1 6 5 2 2\n" 
+			  + "1 14 4 1 10 9 4 2\n" 
+			  + "1 15 4 1 8 7 2 4\n" 
+			  + "1 16 4 1 12 11 4 4\n" 
+			  + "1 17 3 1 13 2 2\n" 
+			  + "1 18 3 1 15 2 4\n" 
+			  + "1 19 3 1 14 4 2\n" 
+			  + "1 20 3 1 16 4 4\n" 
+			  + "1 6 4 1 13 17 2 2\n" 
+			  + "1 10 4 1 14 19 4 2\n" 
+			  + "1 8 4 1 15 18 2 4\n" 
+			  + "1 12 4 1 16 20 4 4\n" 
+			  + "1 1 2 0 3 21\n" 
+			  + "8 2 21 3 0 0\n" 
+			  + "0\n" 
+			  + "3 _fl\n" 
+			  + "2 a(1)\n" 
+			  + "4 a(2)\n" 
+			  + "5 _debug1(1,1)\n" 
+			  + "7 _debug1(2,1)\n" 
+			  + "9 _debug1(1,2)\n" 
+			  + "11 _debug1(2,2)\n" 
+			  + "6 c(1,1)\n" 
+			  + "10 c(1,2)\n" 
+			  + "8 c(2,1)\n" 
+			  + "12 c(2,2)\n" 
+			  + "13 b(1,1)\n" 
+			  + "14 b(1,2)\n" 
+			  + "15 b(2,1)\n" 
+			  + "16 b(2,2)\n" 
+			  + "17 _debug2(1,1)\n" 
+			  + "18 _debug2(2,1)\n" 
+			  + "19 _debug2(1,2)\n" 
+			  + "20 _debug2(2,2)\n" 
+			  + "21 -_fl\n" 
+			  + "0\n" 
+			  + "B+\n" 
+			  + "0\n" 
+			  + "B-\n" 
+			  + "1\n" 
+			  + "0\n" 
+			  + "1";
+		
+		List<String> model = Arrays.asList("a(1)", "a(2)", "b(1,1)", "b(2,1)", "b(1,2)", "b(2,2)");
+		
+		String postprocessed = postprocessor.performPostprocessing(groundedProgram, "_debug", factLiteral, model);
+		
+		assertThat(postprocessed, containsString("1 1 10 6 2 4 13 14 15 16 6 10 8 12"));
 	}
 	
 	@Test
@@ -1027,7 +1093,7 @@ public class PostprocessorTest {
 			  + "0\n"
 			  + "1\n";
 		
-		String postprocessed = postprocessor.performPostprocessing(groundedProgram, "_debug", factLiteral);
+		String postprocessed = postprocessor.performPostprocessing(groundedProgram, "_debug", factLiteral, null);
 		
 		assertEquals(expected, postprocessed);
 	}
@@ -1110,7 +1176,7 @@ public class PostprocessorTest {
 			  + "0\n"
 			  + "1\n";
 		
-		String postprocessed = postprocessor.performPostprocessing(groundedProgram, "_debug", "_fl");
+		String postprocessed = postprocessor.performPostprocessing(groundedProgram, "_debug", "_fl", null);
 		
 		assertEquals(expected, postprocessed);
 	}

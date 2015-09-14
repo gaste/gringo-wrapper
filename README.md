@@ -47,6 +47,7 @@ The gringo-wrapper replaces each fact ``f`` of the logic program with the rule `
 
 ## Assertions
 The gringo-wrapper rewrites assertions of the form `assertTrue(atom)` and `assertFalse(atom)` to rules `:- not atom` and `:- atom`, respectively.
+Furthermore, one can use the `fixModel(atom1,atom2,...)` command to fix the expected answer set `{ atom1, atom2, ... }`.
 
 ## Debug atom map
 Unless the ``--no-debug`` option is present, the gringo-wrapper also appends a mapping of the debug predicate symbols to the rules at the end of the ground program. The entries of the debug atom map are of the following form:

@@ -81,6 +81,7 @@ public class GringoWrapper {
 			throws GroundingException, PostprocessingException {
 		String factLiteral = preprocessor.getFactLiteral(logicProgram);
 		logicProgram = preprocessor.removeComments(logicProgram);
+		List<String> fixedModel = preprocessor.getFixedModel(logicProgram);
 		logicProgram = preprocessor.rewriteAssertions(logicProgram);
 		
 		if (addDebugConstants) {
@@ -93,7 +94,7 @@ public class GringoWrapper {
 		
 		logicProgram = preprocessor.addFactLiteral(logicProgram, factLiteral);
 		logicProgram = grounder.ground(logicProgram);
-		logicProgram = postprocessor.performPostprocessing(logicProgram, DEBUG_CONSTANT_PREFIX, factLiteral);
+		logicProgram = postprocessor.performPostprocessing(logicProgram, DEBUG_CONSTANT_PREFIX, factLiteral, fixedModel);
 
 		if (addDebugConstants) {
 			if (warnRulesRemoved) {
