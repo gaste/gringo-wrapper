@@ -50,7 +50,7 @@ public class Postprocessor {
 		StringBuilder rules = new StringBuilder(splitted[0].length());
 		StringBuilder symbols = new StringBuilder(splitted[1].length());
 		StringBuilder debugChoiceRule = new StringBuilder();
-		FixedModelConstraintBuilder fixedModelConstraint = new FixedModelConstraintBuilder();
+		FixModelConstraintsBuilder fixedModelConstraint = new FixModelConstraintsBuilder();
 		String line = null;
 		Set<String> debugSymbols = new HashSet<String>();
 		boolean factAtomFound = false;
@@ -103,8 +103,6 @@ public class Postprocessor {
 							if (!atom.startsWith(debugAtomPrefix) && !atom.startsWith("fixModel")) {
 								if (fixedModel.contains(atom))
 									fixedModelConstraint.addAtomInModel(symbol);
-								else
-									fixedModelConstraint.addAtomNotInModel(symbol);
 							}
 						}
 					}
@@ -162,7 +160,6 @@ public class Postprocessor {
 			// append the fix model constraint (if present)
 			if (null != fixedModel) {
 				rules.append(fixedModelConstraint.toString());
-				rules.append('\n');
 			}
 			
 			// append the end-of-rules-block marker and the symbols table
@@ -209,58 +206,26 @@ public class Postprocessor {
 		return removedRules;
 	}
 	
-	class FixedModelConstraintBuilder {
-		private int numPositive;
-		private int numNegative;
-		private final StringBuilder positiveAtoms;
-		private final StringBuilder negativeAtoms;
-		
-		public FixedModelConstraintBuilder() {
-			positiveAtoms = new StringBuilder();
-			negativeAtoms = new StringBuilder();
-			numPositive = 0;
-			numNegative = 0;
-		}
+	class FixModelConstraintsBuilder {
+		// [normal rule] [bottom] [1 body atom] [1 negative body atom]
+		private final String CONSTRAINT_PREFIX = "1 1 1 1 ";
+		private final List<String> expectedAtoms = new ArrayList<String>();
 		
 		public void addAtomInModel(String symbol) {
-			// in model, thus use 'not symbol' in the constraint
-			if (numNegative > 0) {
-				negativeAtoms.append(' ');
-			}
-			
-			numNegative ++;
-			negativeAtoms.append(symbol);
-		}
-		
-		public void addAtomNotInModel(String symbol) {
-			// not in model, thuse use 'symbol' in the constraint
-			if (numPositive > 0) {
-				positiveAtoms.append(' ');
-			}
-			
-			numPositive ++;
-			positiveAtoms.append(symbol);
+			expectedAtoms.add(symbol);
 		}
 		
 		@Override
 		public String toString() {
-			StringBuilder constraint = new StringBuilder();
-			constraint.append("1 1 ");
-			constraint.append(numNegative + numPositive);
-			constraint.append(' ');
-			constraint.append(numNegative);
+			StringBuilder constraints = new StringBuilder();
 			
-			if (numNegative > 0) {
-				constraint.append(' ');
-				constraint.append(negativeAtoms);
+			for (String atom : expectedAtoms) {
+				constraints.append(CONSTRAINT_PREFIX);
+				constraints.append(atom);
+				constraints.append('\n');
 			}
 			
-			if (numPositive > 0) {
-				constraint.append(' ');
-				constraint.append(positiveAtoms);
-			}
-			
-			return constraint.toString();
+			return constraints.toString();
 		}
 	}
 }

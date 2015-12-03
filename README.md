@@ -46,8 +46,8 @@ This will create a `.zip` and `.tar.gz` file containing the Java archive as well
 The gringo-wrapper replaces each fact ``f`` of the logic program with the rule ``f :- _l``, where ``_l`` is a fresh atom. Adding the rule ``_l | -_l`` ensures that gringo cannot do any optimization, since there are no facts in the logic program. After this modification, the gringo-wrapper uses gringo to ground the modified logic program. Then it replaces each grounded rule ``f :- _l`` with the fact ``f.`` and removes the artificial atom ``_l``.
 
 ## Assertions
-The gringo-wrapper rewrites assertions of the form `assertTrue(atom)` and `assertFalse(atom)` to rules `:- not atom` and `:- atom`, respectively.
-Furthermore, one can use the `fixModel(atom1,atom2,...)` command to fix the expected answer set `{ atom1, atom2, ... }`.
+ * The gringo-wrapper rewrites assertions of the form `assertTrue(atom)` and `assertFalse(atom)` to rules `:- not atom` and `:- atom`, respectively.
+ * The `fixModel(atom1,atom2,atomN)` command fixes the expected answer set `{ atom1, atom2, ..., atomN }`. This is done by introduction a constraint `:- not atomI` for each atom `atomI` in the `fixModel` command, that is not part of any other assertion.
 
 ## Debug atom map
 Unless the ``--no-debug`` option is present, the gringo-wrapper also appends a mapping of the debug predicate symbols to the rules at the end of the ground program. The entries of the debug atom map are of the following form:

@@ -71,6 +71,15 @@ public class Preprocessor {
 			+ "\\) *" // closing ')', then ' '
 			+ "(?=((?<!\\.)\\.(?!\\.)))"; // single '.' that delimits the assertion
 	
+	private static final String ASSERT_REGEX
+			= "((?<=((?<!\\.)\\.(?!\\.)))|^)" // single '.' or new line
+			+ " *(assertTrue|assertFalse)" // ' ', then 'assertFalse' or 'assertTrue'
+			+ " *\\(" // ' ' followed by a '('
+			+ "(?<ASSERTION>[ a-zA-Z0-9(),_\\-]*)" // content of the assertion
+			+ "\\) *" // closing ')', then ' '
+			+ "(?=((?<!\\.)\\.(?!\\.)))"; // single '.' that delimits the assertion
+			
+	
 	/** Group that matches the fact */
 	private static final String FACT_REGEX_MATCHING_GROUP = "$3";
 	
@@ -85,6 +94,8 @@ public class Preprocessor {
 	private static final Pattern ASSERT_TRUE_PATTERN = Pattern.compile(ASSERT_TRUE_REGEX, Pattern.MULTILINE);
 	
 	private static final Pattern ASSERT_FALSE_PATTERN = Pattern.compile(ASSERT_FALSE_REGEX, Pattern.MULTILINE);
+	
+	private static final Pattern ASSERT_PATTERN = Pattern.compile(ASSERT_REGEX, Pattern.MULTILINE);
 
 	private static final Pattern FACT_PATTERN = Pattern.compile(FACT_REGEX, Pattern.MULTILINE);
 	
@@ -130,6 +141,8 @@ public class Preprocessor {
 			return null;
 		
 		String modelTerm = matcher.group("MODEL");
+		
+		List<String> assertedAtoms = getAssertedAtoms(logicProgram);
 
 		// parse the atoms inside the modelTerm
 		List<String> model = new ArrayList<String>();
@@ -144,7 +157,10 @@ public class Preprocessor {
 				openParens --;
 				atomBuilder.append(')');
 			} else if (',' == c && openParens == 0) {
-				model.add(atomBuilder.toString());
+				// add the atom to the fixed-model list, if it is not asserted
+				if (!assertedAtoms.contains(atomBuilder.toString()))
+					model.add(atomBuilder.toString());
+				
 				atomBuilder.setLength(0);
 			} else {
 				atomBuilder.append(c);
@@ -152,10 +168,31 @@ public class Preprocessor {
 		}
 		
 		if (atomBuilder.length() > 0) {
-			model.add(atomBuilder.toString());
+			// add the atom to the fixed-model list, if it is not asserted
+			if (!assertedAtoms.contains(atomBuilder.toString()))
+				model.add(atomBuilder.toString());
 		}
 		
 		return model;
+	}
+	
+	/**
+	 * Get a list of all atoms that are part of any assertion. I.e. the result
+	 * comprises all atoms <code>a</code>, where there exists some 
+	 * <code>assertTrue(a)</code> or some <code>assertFalse(a)</code>.
+	 * @param logicProgram The logic program.
+	 * @return The list of assertions.
+	 */
+	private List<String> getAssertedAtoms(String logicProgram) {
+		List<String> assertedAtoms = new ArrayList<String>();
+		
+		Matcher matchAssertion = ASSERT_PATTERN.matcher(logicProgram);
+		
+		while (matchAssertion.find()) {
+			assertedAtoms.add(matchAssertion.group("ASSERTION"));
+		}
+		
+		return assertedAtoms;
 	}
 
 	/**

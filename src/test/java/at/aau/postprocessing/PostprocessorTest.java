@@ -1027,11 +1027,15 @@ public class PostprocessorTest {
 			  + "0\n" 
 			  + "1";
 		
-		List<String> model = Arrays.asList("a(1)", "a(2)", "b(1,1)", "b(2,1)", "b(1,2)", "b(2,2)");
+		List<String> model = Arrays.asList("a(1)", "b(1,1)", "b(2,1)", "b(1,2)", "b(2,2)");
 		
 		String postprocessed = postprocessor.performPostprocessing(groundedProgram, "_debug", factLiteral, model);
 		
-		assertThat(postprocessed, containsString("1 1 10 6 2 4 13 14 15 16 6 10 8 12"));
+		assertThat(postprocessed, containsString("1 1 1 1 2"));
+		assertThat(postprocessed, containsString("1 1 1 1 13"));
+		assertThat(postprocessed, containsString("1 1 1 1 14"));
+		assertThat(postprocessed, containsString("1 1 1 1 15"));
+		assertThat(postprocessed, containsString("1 1 1 1 16"));
 	}
 	
 	@Test

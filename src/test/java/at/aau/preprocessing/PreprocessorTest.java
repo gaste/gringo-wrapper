@@ -117,6 +117,19 @@ public class PreprocessorTest {
 		
 		assertEquals(Arrays.asList("a(1)","a(2)","b(1,1)","b(2,1)","b(1,2)","b(2,2)"), fixedModel);
 	}
+	
+	@Test
+	public void getFixedModel_assertions_returnsCorrect() {
+		String logicProgram =
+				"a.\n"
+			  + "b :- a.\n"
+			  + "fixModel(a,b).\n"
+			  + "assertFalse(b).";
+		
+		List<String> fixedModel = preprocessor.getFixedModel(logicProgram);
+		
+		assertEquals(Arrays.asList("a"), fixedModel);
+	}
 
 	// =========================================================================
 	// rewriteAssertions tests
